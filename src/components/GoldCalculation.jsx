@@ -783,8 +783,20 @@ const injectStyles = () => {
     .gc-bill-status--paid      { background:var(--green-bg); color:var(--green); border:1px solid var(--green-bd); }
     .gc-inv-num { font-size:0.72rem; color:var(--t4); font-weight:400; white-space:nowrap; }
 
-    /* ─── Save button ─── */
-    .gc-save-wrap { display:flex; justify-content:center; margin-top:28px; }
+    /* ─── Save / Print buttons ─── */
+    .gc-save-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:28px; width:100%; }
+    .gc-btn-print-last {
+      background: transparent;
+      color: var(--gold);
+      font-family: var(--font); font-size:0.84rem; font-weight:600;
+      letter-spacing:0.2px;
+      padding:10px 28px; border:1px solid var(--border-md); border-radius: var(--r-md);
+      cursor:pointer; width:100%; max-width:380px;
+      transition: all 0.25s var(--ease);
+    }
+    .gc-btn-print-last:hover:not(:disabled) { background:var(--gold-glow); border-color:var(--border-lg); transform:translateY(-1px); }
+    .gc-btn-print-last:active:not(:disabled) { transform:translateY(0); }
+    .gc-btn-print-last:disabled { opacity:0.35; cursor:not-allowed; }
     .gc-btn-save {
       background: linear-gradient(135deg, var(--gold-dk) 0%, var(--gold) 100%);
       color: #1a1100;
@@ -873,9 +885,12 @@ function GoldCalculation({ customers, onCalculationSaved }) {
   const [editForm, setEditForm] = useState({});
 
   // ── UI ──
-  const [printing, setPrinting] = useState(false);
+  const [printing, setPrinting]       = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [historyExpanded, setHistoryExpanded] = useState(true);
+
+  // ── Last saved snapshot — used by "Print Last" so re-clicking never creates a new record ──
+  const [lastSavedData, setLastSavedData] = useState(null);
 
   // ── Step ──
   const step = !selectedCustomer ? 1 : (!goldInput || !purityPercent || !customerFine) ? 2 : 3;
@@ -887,7 +902,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
   const fmtDate = d => new Date(d).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 
   // ── Billing computed ──
-  const discountAmt  = ((parseFloat(discount) || 0) / 100) * Math.abs(balance) * (parseFloat(goldPrice) || 0);
+  const discountAmt  = parseFloat(discount) || 0;
   const taxableAmt   = Math.abs(balance) * (parseFloat(goldPrice) || 0) - discountAmt;
   const taxAmt       = ((parseFloat(taxRate) || 0) / 100) * taxableAmt;
   const grandTotal   = taxableAmt + taxAmt;
@@ -940,6 +955,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
     setSelectedCustomer(c);
     setSearchQuery(`${c.name} (${c.mobile})`);
     setShowDropdown(false);
+    setLastSavedData(null);
     await loadRecords(c);
   };
 
@@ -1094,13 +1110,8 @@ function GoldCalculation({ customers, onCalculationSaved }) {
       if (onCalculationSaved) onCalculationSaved();
 
       // 3. Build currentOrder snapshot for the bill print
-      const freshRecords = await supabase
-        .from('gold_calculations')
-        .select('*')
-        .eq('customer_id', selectedCustomer.id)
-        .order('created_at', { ascending: false });
-      const allRecs  = freshRecords.data || [];
-      const netBal   = allRecs.reduce((s, r) => s + (parseFloat(r.balance) || 0) - (parseFloat(r.paid_gold) || 0), 0);
+      // netBal uses the same formula as the on-screen Net Balance so receipt matches exactly
+      const netBal = (customerRecords.length > 0 ? totals.net : 0) + balance - pg;
 
       const currentOrder = {
         metalType,
@@ -1109,6 +1120,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
         fineGold:     parseFloat(fmtG(fineGold)),
         customerFine: parseFloat(fmtG(cf)),
         balance:      parseFloat(fmtG(balance)),
+        paidGold:     parseFloat(fmtG(pg)),
         goldPrice:    gp,
         cashPayment:  ca,
         discount:     disc,
@@ -1120,7 +1132,10 @@ function GoldCalculation({ customers, onCalculationSaved }) {
         invoiceNumber: saved?.[0]?.invoice_number || '',
       };
 
-      // 4. Print — sends to thermal printer first, opens preview window
+      // 4. Store snapshot so "Print Last" can re-print without a new DB insert
+      setLastSavedData({ customer: selectedCustomer, order: currentOrder, netBal });
+
+      // 5. Print — sends to thermal printer first, opens preview window
       const result = await printCurrentOrderBill(selectedCustomer, currentOrder, netBal);
       toast.success(result.method === 'bluetooth'
         ? '✓ Saved & sent to thermal printer!'
@@ -1128,6 +1143,23 @@ function GoldCalculation({ customers, onCalculationSaved }) {
       resetForm();
     } catch (e) { toast.error(`Failed: ${e.message}`); }
     finally { setSaving(false); }
+  };
+
+  // ── Print Last — re-prints the most recently saved record; never inserts a new row ──
+  const handlePrintLast = async () => {
+    if (!lastSavedData || printing) return;
+    setPrinting(true);
+    try {
+      const { customer, order, netBal } = lastSavedData;
+      const result = await printCurrentOrderBill(customer, order, netBal);
+      toast.success(result.method === 'bluetooth'
+        ? '✓ Re-sent to thermal printer!'
+        : '✓ Print preview opened!');
+    } catch (err) {
+      toast.error(`Print failed: ${err.message}`);
+    } finally {
+      setPrinting(false);
+    }
   };
 
   // ── Helpers ──
@@ -1344,11 +1376,11 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     </div>
                     {/* Discount */}
                     <div className="gc-form-group">
-                      <label className="gc-label">Discount <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>(%)</span></label>
+                      <label className="gc-label">Discount <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>— ₹</span></label>
                       <div className="gc-input-wrap">
                         <span className="gc-input-ico">🏷️</span>
-                        <input type="number" className="gc-input" placeholder="e.g. 5" value={discount}
-                          onChange={e => setDiscount(e.target.value)} step="0.01" min="0" max="100" disabled={saving} />
+                        <input type="number" className="gc-input" placeholder="Amount e.g. 50" value={discount}
+                          onChange={e => setDiscount(e.target.value)} step="0.01" min="0" disabled={saving} />
                       </div>
                     </div>
                     {/* Tax Rate */}
@@ -1425,9 +1457,9 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                         <span className="gc-bill-row-val" style={{ color:'var(--blue)' }}>₹{fmtC(parseFloat(cashPayment))}</span>
                       </div>
                     )}
-                    {parseFloat(discount) > 0 && (
+                    {discountAmt > 0 && (
                       <div className="gc-bill-row">
-                        <span className="gc-bill-row-lbl" style={{ color:'var(--green)' }}>Discount ({discount}%)</span>
+                        <span className="gc-bill-row-lbl" style={{ color:'var(--green)' }}>Discount</span>
                         <span className="gc-bill-row-val" style={{ color:'var(--green)' }}>− ₹{discountAmt.toFixed(2)}</span>
                       </div>
                     )}
@@ -1462,22 +1494,38 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     )}
                     <div className="gc-bill-total-row">
                       <span className="gc-bill-total-lbl">Net Balance</span>
-                      <span className="gc-bill-total-val" style={{ color: balColor(customerRecords.length > 0 ? totals.net + balance : balance) }}>
-                        {fmtG(customerRecords.length > 0 ? totals.net + balance : balance)} g
-                      </span>
-                    </div>
-                    <div style={{ fontSize:'0.7rem', color:'var(--t4)', marginTop:'6px', fontStyle:'italic', fontWeight:300, textAlign:'center' }}>
-                      {(customerRecords.length > 0 ? totals.net + balance : balance) >= 0
-                        ? '↑ Manufacturer owes customer'
-                        : '↓ Customer owes manufacturer'}
+                      {(() => {
+                        const netDisplay = (customerRecords.length > 0 ? totals.net : 0) + balance - (parseFloat(paidGold) || 0);
+                        return (
+                          <>
+                            <span className="gc-bill-total-val" style={{ color: balColor(netDisplay) }}>
+                              {fmtG(netDisplay)} g
+                            </span>
+                            <div style={{ fontSize:'0.7rem', color:'var(--t4)', marginTop:'6px', fontStyle:'italic', fontWeight:300, textAlign:'center', width:'100%' }}>
+                              {netDisplay >= 0 ? '↑ Manufacturer owes customer' : '↓ Customer owes manufacturer'}
+                            </div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
 
-                  {/* ══ Print & Save — right after Current Order card ══ */}
+                  {/* ══ Print & Save + Print Last ══ */}
                   <div className="gc-save-wrap" style={{ marginTop:'18px' }}>
                     <button type="submit" className="gc-btn-save" disabled={saving || !selectedCustomer}>
                       {saving ? '⏳ Saving & Printing…' : '🖨️ Print & Save'}
                     </button>
+                    {lastSavedData && (
+                      <button
+                        type="button"
+                        className="gc-btn-print-last"
+                        onClick={handlePrintLast}
+                        disabled={printing}
+                        title="Re-print the last saved transaction without creating a new record"
+                      >
+                        {printing ? '⏳ Printing…' : '🔄 Print Last Transaction'}
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

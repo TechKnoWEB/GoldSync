@@ -1,7 +1,21 @@
 // ============================================
 // thermalPrinter.js  — v6 (Table Fix)
 // 3-inch (80mm / 48-col) Bluetooth ESC/POS
-
+//
+// ── FIX: Tables now exactly 48 chars ─────────
+//
+// GOLD TABLE (6 cols, 5 pipes = 48):
+// Date    |    Gold| Pur% |   Fine|  CustF|    Bal
+//    8    1    8   1   6  1    7  1    7  1    7
+//    8+1+8+1+6+1+7+1+7+1+7 = 48 ✓
+//
+// PAYMENT TABLE (6 cols, 5 pipes = 48):
+// Date    | GPrice|    Cash|  PaidG| FinBal|Mode
+//    8    1    7  1     8  1    7  1    7  1   4
+//    8+1+7+1+8+1+7+1+7+1+4 = 44... 
+//
+// Actually let me recalculate below in code.
+// ============================================
 
 const ESC = 0x1b;
 const GS  = 0x1d;
@@ -678,11 +692,18 @@ function buildCurrentOrderData(customer, order, netBalance) {
   customer.mobile = customer.mobile || 'N/A';
   order = order || {};
 
-  var W       = PRINT_WIDTH;
-  var bal     = safeNum(order.balance);
-  var prevBal = safeNum(netBalance) - bal;
-  var netBal  = safeNum(netBalance);
-  var parts   = [];
+  var W          = PRINT_WIDTH;
+  var bal        = safeNum(order.balance);
+  var paidGold   = safeNum(order.paidGold);
+  var prevBal    = safeNum(netBalance) - (bal - paidGold);
+  var netBal     = safeNum(netBalance);
+  var goldPrice  = safeNum(order.goldPrice);
+  var cashPaid   = safeNum(order.cashPayment);
+  var disc       = safeNum(order.discount);
+  var taxRate    = safeNum(order.taxRate);
+  var taxAmt     = safeNum(order.taxAmt);
+  var grandTotal = safeNum(order.grandTotal);
+  var parts      = [];
 
   var statusLabel = order.billStatus
     ? (order.billStatus.charAt(0).toUpperCase() + order.billStatus.slice(1))
@@ -691,101 +712,134 @@ function buildCurrentOrderData(customer, order, netBalance) {
     ? (order.metalType.charAt(0).toUpperCase() + order.metalType.slice(1))
     : 'Gold';
 
+  // Cash=Gold calculation
+  // cashGoldValue  = balance (g) × goldPrice  — what the balance is worth in ₹
+  // cashGoldDiff   = cashPaid − cashGoldValue — overpaid (+) or still owes (−)
+  var cashGoldValue = bal * goldPrice;
+  var cashGoldDiff  = cashPaid - cashGoldValue;
+
   function addCmd() {
     for (var i = 0; i < arguments.length; i++) parts.push(new Uint8Array(arguments[i]));
   }
   function addText(s) { parts.push(encoder.encode(String(s))); }
   function addLine(s) { parts.push(encoder.encode(String(s))); parts.push(new Uint8Array([LF])); }
-  function kv(label, value) {
-    addLine(pr(label + ':', 24) + pl(String(value), 24));
+  function lv(label, value) {
+    // left-label : right-value, total 48 chars
+    var l = String(label) + ':';
+    var v = String(value);
+    var pad = W - l.length - v.length;
+    if (pad < 1) pad = 1;
+    addLine(l + ' '.repeat(pad) + v);
   }
+  function bold(on) { addCmd([ESC, 0x45, on ? 1 : 0]); }
   function divider(ch) { addLine(sep(ch || '-', W)); }
 
   // ── INIT ──
-  addCmd([ESC, 0x40]);           // init
-  addCmd([ESC, 0x33, 24]);       // line spacing
+  addCmd([ESC, 0x40]);
+  addCmd([ESC, 0x33, 24]);
 
   // ── HEADER ──
-  addCmd([ESC, 0x61, 1]);        // center
-  addCmd([GS,  0x21, 0x11]);     // double width+height
-  addCmd([ESC, 0x45, 1]);
+  addCmd([ESC, 0x61, 1]);           // center
+  addCmd([GS,  0x21, 0x11]);        // 2× width+height
+  bold(true);
   addLine('SREE GOLD');
   addCmd([GS,  0x21, 0x00]);
-  addCmd([ESC, 0x45, 1]);
-  addLine('MANUFACTURING');
-  addCmd([ESC, 0x45, 0]);
+  bold(false);
   addLine('CALCULATION RECEIPT');
   divider('=');
 
   // ── CUSTOMER ──
-  addCmd([ESC, 0x61, 0]);        // left
-  addCmd([ESC, 0x45, 1]); addText('Customer : ');
-  addCmd([ESC, 0x45, 0]); addLine(customer.name);
-  addCmd([ESC, 0x45, 1]); addText('Mobile   : ');
-  addCmd([ESC, 0x45, 0]); addLine(customer.mobile);
-  addCmd([ESC, 0x45, 1]); addText('Date     : ');
-  addCmd([ESC, 0x45, 0]); addLine(new Date().toLocaleString('en-IN'));
-  addCmd([ESC, 0x45, 1]); addText('Status   : ');
-  addCmd([ESC, 0x45, 0]); addLine(statusLabel);
+  addCmd([ESC, 0x61, 0]);           // left
+  bold(true); addText('Customer : '); bold(false); addLine(customer.name);
+  bold(true); addText('Mobile   : '); bold(false); addLine(customer.mobile);
+  bold(true); addText('Date     : '); bold(false); addLine(new Date().toLocaleString('en-IN'));
+  bold(true); addText('Status   : '); bold(false); addLine(statusLabel);
   divider('-');
 
   // ── CURRENT ORDER ──
   addCmd([ESC, 0x61, 1]);
-  addCmd([ESC, 0x45, 1]);
-  addLine('CURRENT ORDER');
-  addCmd([ESC, 0x45, 0]);
+  bold(true); addLine('CURRENT ORDER'); bold(false);
   addCmd([ESC, 0x61, 0]);
   divider('-');
 
-  kv('Metal',         metalLabel);
-  kv('Gold Weight',   f3(order.goldInput) + ' g');
-  kv('Purity',        safeNum(order.purityPercent).toFixed(2) + ' %');
-
-  addCmd([ESC, 0x45, 1]);
-  kv('Fine Gold',     f3(order.fineGold) + ' g');
-  addCmd([ESC, 0x45, 0]);
-
-  kv('Customer Fine', f3(order.customerFine) + ' g');
+  lv('Metal',         metalLabel);
+  lv('Gold Weight',   f3(order.goldInput) + ' g');
+  lv('Purity',        safeNum(order.purityPercent).toFixed(2) + ' %');
+  bold(true); lv('Fine Gold',  f3(order.fineGold) + ' g'); bold(false);
+  lv('Customer Fine', f3(order.customerFine) + ' g');
   divider('-');
 
-  // ── BALANCE TABLE (3 columns) ──
-  // Prev(15) | This(15) | Net(16) = 48 (with 2 pipes) → 15+1+15+1+16=48
-  var hPrev = pr(' Prev.Bal', 15);
-  var hThis = pr(' ThisOrd.',15);
-  var hNet  = pr(' Net Bal.',16);
-  addCmd([ESC, 0x45, 1]);
-  addLine(hPrev + '|' + hThis + '|' + hNet);
-  addCmd([ESC, 0x45, 0]);
+  // This Order Balance — bold
+  bold(true); lv('This Order Balance', f3(bal) + ' g'); bold(false);
   divider('-');
 
-  function balCell(val, w) {
-    var s = f3(val) + 'g';
-    return pr(' ' + s, w);
-  }
-  addLine(balCell(prevBal,15) + '|' + balCell(bal,15) + '|' + balCell(netBal,16));
+  // ── PAYMENT (only if gold price entered) ──
+  if (goldPrice > 0) {
+    lv('Gold Price',       'Rs. ' + f1(goldPrice) + '/g');
+    lv('Cash(Gold) Value', f1(cashGoldValue));
+    divider('-');
+    bold(true); lv('Cash(Gold) Paid', f1(cashPaid)); bold(false);
+    if (disc > 0) {
+      lv('Discount', '- Rs.' + f2(disc));
+    }
+    if (taxRate > 0) {
+      lv('GST/Tax (' + taxRate + '%)', '+ Rs.' + f2(taxAmt));
+    }
+    lv('Order Value', 'Rs. ' + f2(grandTotal));
+    divider('-');
 
-  function dirCell(val, w) {
-    var d = val >= 0 ? ' Receivable' : ' Payable';
-    return pr(d, w);
+    // ── CASH=GOLD CALCULATION ──
+    // Show how Cash Paid reconciles against the balance
+    if (cashPaid > 0) {
+      addCmd([ESC, 0x61, 1]);
+      bold(true); addLine('CASH = GOLD SETTLEMENT'); bold(false);
+      addCmd([ESC, 0x61, 0]);
+      divider('-');
+      lv('Balance',          f3(bal) + ' g');
+      lv('x Gold Price',     'Rs. ' + f1(goldPrice) + '/g');
+      lv('= Cash(Gold) Val', 'Rs. ' + f1(cashGoldValue));
+      lv('Cash Paid',        'Rs. ' + f1(cashPaid));
+      divider('-');
+      if (cashGoldDiff > 0) {
+        // Customer paid more than balance value — credit
+        bold(true);
+        lv('Overpaid (+)',  'Rs. ' + f2(cashGoldDiff));
+        bold(false);
+        addLine('  >> Customer has credit');
+      } else if (cashGoldDiff < 0) {
+        // Customer paid less — still owes
+        bold(true);
+        lv('Still Owes (-)', 'Rs. ' + f2(Math.abs(cashGoldDiff)));
+        bold(false);
+        addLine('  >> Balance pending');
+      } else {
+        bold(true);
+        addLine('Fully Settled');
+        bold(false);
+      }
+      divider('-');
+    }
   }
-  addLine(dirCell(prevBal,15) + '|' + dirCell(bal,15) + '|' + dirCell(netBal,16));
+
+  // ── BALANCE SUMMARY ──
+  bold(true); lv('Previous Net Bal',    f3(prevBal) + ' g'); bold(false);
+  bold(true); lv('This Order Balance',  f3(bal)     + ' g'); bold(false);
   divider('=');
 
   // ── NET BALANCE HERO ──
   addCmd([ESC, 0x61, 1]);
   addCmd([GS,  0x21, 0x10]);
-  addCmd([ESC, 0x45, 1]);
-  addLine('NET BALANCE');
+  bold(true); addLine('NET BALANCE'); bold(false);
   addCmd([GS,  0x21, 0x11]);
   addLine(f3(netBal) + ' g');
   addCmd([GS,  0x21, 0x00]);
-  addCmd([ESC, 0x45, 0]);
   addLine(netBal >= 0 ? 'Receivable' : 'Payable');
 
   // ── FOOTER ──
   divider('=');
   addCmd([ESC, 0x61, 1]);
   addLine('Thank you for your business!');
+    addLine('                                  ');
   addCmd([ESC, 0x64, 4]);        // feed 4 lines
   addCmd([GS,  0x56, 0x01]);     // full cut
 
@@ -793,12 +847,21 @@ function buildCurrentOrderData(customer, order, netBalance) {
 }
 
 export async function printCurrentOrderBill(customer, order, netBalance) {
-  var bal     = safeNum(order ? order.balance : 0);
-  var prevBal = safeNum(netBalance) - bal;
-  var netBal  = safeNum(netBalance);
-
   customer = customer || {};
   order    = order    || {};
+
+  var bal           = safeNum(order.balance);
+  var paidGold      = safeNum(order.paidGold);
+  var prevBal       = safeNum(netBalance) - (bal - paidGold);
+  var netBal        = safeNum(netBalance);
+  var goldPrice     = safeNum(order.goldPrice);
+  var cashPaid      = safeNum(order.cashPayment);
+  var disc          = safeNum(order.discount);
+  var taxRate       = safeNum(order.taxRate);
+  var taxAmt        = safeNum(order.taxAmt);
+  var grandTotal    = safeNum(order.grandTotal);
+  var cashGoldValue = bal * goldPrice;
+  var cashGoldDiff  = cashPaid - cashGoldValue;
 
   var metalLabel  = order.metalType
     ? (order.metalType.charAt(0).toUpperCase() + order.metalType.slice(1))
@@ -811,20 +874,25 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
   var invNum = order.invoiceNumber ? ('#' + order.invoiceNumber) : '';
   var now    = new Date().toLocaleString('en-IN');
 
-  function colorOf(n) { return n >= 0 ? '#006600' : '#cc0000'; }
-  function dirOf(n)   { return n >= 0 ? '&#8593; Receivable' : '&#8595; Payable'; }
-  function row(label, value, bold, color) {
-    var vs = bold
-      ? '<span style="font-weight:900' + (color ? ';color:' + color : '') + '">' + value + '</span>'
-      : '<span' + (color ? ' style="color:' + color + '"' : '') + '>' + value + '</span>';
-    return '<div class="r"><span class="lbl">' + label + '</span>' + vs + '</div>';
+  // ── helpers ──
+  function c(n) { return n >= 0 ? '#006600' : '#cc0000'; }
+  function dir(n) { return n >= 0 ? '&#8593; Receivable' : '&#8595; Payable'; }
+  function row(label, val, bold) {
+    return '<div class="r">' +
+      '<span class="lbl">' + label + '</span>' +
+      '<span' + (bold ? ' class="b"' : '') + '>' + val + '</span>' +
+    '</div>';
   }
-  var sep = '<div class="sep"></div>';
+  function div(ch) {
+    return '<div class="div' + (ch === '=' ? ' dbl' : '') + '"></div>';
+  }
+  function sectionTitle(t) {
+    return '<div class="sec">' + t + '</div>';
+  }
 
-  // ── 1. Fire ESC/POS to Bluetooth in background ──
-  var btStatus  = '';   // 'ok' | 'fail' | 'na'
+  // ── 1. Bluetooth ESC/POS ──
+  var btStatus  = '';
   var btMessage = '';
-
   if (isBluetoothAvailable()) {
     try {
       var device = await requestPrinterDevice();
@@ -839,13 +907,11 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
     } catch (err) {
       btStatus  = 'fail';
       btMessage = 'Bluetooth: ' + err.message;
-      // don't rethrow — preview window still opens below
     }
   } else {
     btStatus = 'na';
   }
 
-  // ── 2. Build & open preview window ──
   var btBanner = '';
   if (btStatus === 'ok') {
     btBanner = '<div class="bt-ok no-print">&#128424; ' + btMessage + '</div>';
@@ -854,56 +920,55 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
                '<br><small>Use the Print button below to print manually.</small></div>';
   }
 
+  // ── 2. HTML preview ──
   var html =
     '<!DOCTYPE html><html><head>' +
     '<meta charset="UTF-8"/>' +
     '<meta name="viewport" content="width=device-width,initial-scale=1"/>' +
-    '<title>Receipt &#8211; ' + customer.name + '</title>' +
+    '<title>Receipt - ' + customer.name + '</title>' +
     '<style>' +
-      '@media print{' +
-        '@page{margin:3mm;size:80mm auto}' +
-        'body{padding:0!important}' +
-        '.no-print{display:none!important}' +
-      '}' +
+      '@media print{@page{margin:3mm;size:80mm auto}body{padding:0!important}.no-print{display:none!important}}' +
       'body{font-family:"Courier New",Courier,monospace;font-size:10px;color:#111;' +
         'max-width:80mm;margin:0 auto;padding:5mm 4mm;background:#fff}' +
-      '.hd{text-align:center;padding-bottom:7px;border-bottom:2px solid #111;margin-bottom:6px}' +
+      /* header */
+      '.hd{text-align:center;padding-bottom:6px;border-bottom:2px solid #111;margin-bottom:5px}' +
       '.hd-brand{font-size:15px;font-weight:900;letter-spacing:1.5px}' +
-      '.hd-sub{font-size:7px;letter-spacing:3px;color:#555;margin-top:2px}' +
-      '.hd-tag{display:inline-block;margin-top:5px;font-size:9px;font-weight:700;' +
+      '.hd-tag{display:inline-block;margin-top:4px;font-size:9px;font-weight:700;' +
         'background:#111;color:#fff;padding:2px 10px;border-radius:2px;letter-spacing:.8px}' +
       '.hd-inv{font-size:7px;color:#777;margin-top:2px}' +
-      '.hd-status{display:inline-block;padding:1px 8px;border-radius:3px;' +
-        'font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;' +
-        'border:1.5px solid currentColor;margin-top:3px}' +
-      '.cust{padding:5px 0;border-bottom:1px dashed #aaa;margin-bottom:5px}' +
-      '.r{display:flex;justify-content:space-between;align-items:baseline;' +
-        'padding:2px 0;font-size:8.5px;border-bottom:1px dotted #e8e8e8}' +
-      '.r:last-child{border-bottom:none}' +
+      '.hd-status{display:inline-block;padding:1px 8px;border-radius:3px;margin-top:3px;' +
+        'font-size:7px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;border:1.5px solid currentColor}' +
+      /* rows */
+      '.r{display:flex;justify-content:space-between;align-items:baseline;padding:2.5px 0;font-size:8.5px}' +
       '.lbl{color:#444;font-weight:600}' +
-      '.st{text-align:center;font-size:7px;font-weight:900;text-transform:uppercase;' +
-        'letter-spacing:1.5px;color:#555;padding:5px 0 3px;border-top:1px dashed #aaa;margin-top:4px}' +
-      '.sep{height:1px;background:#ccc;margin:4px 0}' +
-      '.bal-table{width:100%;border-collapse:collapse;margin:5px 0;font-size:8.5px}' +
-      '.bal-table td{padding:3px 4px;border:1px solid #ccc}' +
-      '.bal-table .h{font-size:7px;font-weight:700;text-transform:uppercase;' +
-        'letter-spacing:.8px;color:#555;text-align:center;background:#f5f5f5}' +
-      '.bal-table .v{font-weight:900;font-size:10px;text-align:center}' +
-      '.bal-table .d{font-size:6.5px;text-align:center;color:#666;font-style:italic}' +
-      '.net{margin:6px 0;padding:7px 6px;border:2.5px solid #111;border-radius:4px;text-align:center}' +
+      '.b{font-weight:900}' +
+      /* section title */
+      '.sec{text-align:center;font-size:7.5px;font-weight:900;text-transform:uppercase;' +
+        'letter-spacing:1.5px;color:#555;padding:4px 0 3px}' +
+      /* dividers */
+      '.div{height:1px;background:#bbb;margin:3px 0}' +
+      '.dbl{background:#111;height:2px}' +
+      /* cash=gold settlement block */
+      '.settle{background:#f5f5f5;border:1px solid #ccc;border-radius:3px;' +
+        'padding:5px 7px;margin:4px 0;font-size:8px}' +
+      '.settle-title{text-align:center;font-weight:900;font-size:8px;text-transform:uppercase;' +
+        'letter-spacing:1px;margin-bottom:4px}' +
+      '.settle .r{font-size:8px;padding:1.5px 0}' +
+      '.settle-result{text-align:center;margin-top:4px;font-weight:900;font-size:9px;padding:3px 0;' +
+        'border-top:1px solid #ccc}' +
+      /* net balance hero */
+      '.net{margin:6px 0;padding:8px 6px;border:2.5px solid #111;border-radius:4px;text-align:center}' +
       '.net-lbl{font-size:7px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#555}' +
-      '.net-val{font-size:18px;font-weight:900;letter-spacing:-.5px;margin:3px 0}' +
-      '.net-dir{font-size:7.5px;font-style:italic;color:#444}' +
-      '.ft{text-align:center;margin-top:6px;padding-top:5px;border-top:2px solid #111}' +
-      '.ft-line{height:1px;background:linear-gradient(90deg,transparent,#aaa,transparent);margin:3px 0}' +
-      '.ft-txt{font-size:7px;color:#777}' +
-      /* Bluetooth status banners */
+      '.net-val{font-size:20px;font-weight:900;letter-spacing:-.5px;margin:3px 0}' +
+      '.net-dir{font-size:8px;font-style:italic;color:#444}' +
+      /* footer */
+      '.ft{text-align:center;margin-top:6px;padding-top:5px;border-top:2px solid #111;font-size:7.5px;color:#777}' +
+      /* bt banners */
       '.bt-ok{background:#e6f4ea;color:#1a6630;border:1px solid #a8d5b0;border-radius:4px;' +
         'padding:7px 10px;margin:8px 0;font-size:9px;font-weight:700;text-align:center}' +
       '.bt-fail{background:#fff3cd;color:#856404;border:1px solid #ffe08a;border-radius:4px;' +
         'padding:7px 10px;margin:8px 0;font-size:8.5px;text-align:center}' +
       '.bt-fail small{font-size:7.5px;display:block;margin-top:3px;opacity:.8}' +
-      /* Print button */
       '.print-btn{display:block;width:100%;margin-top:10px;padding:9px;cursor:pointer;' +
         'background:#111;color:#fff;border:none;border-radius:3px;' +
         'font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.5px}' +
@@ -912,68 +977,82 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
     /* HEADER */
     '<div class="hd">' +
       '<div class="hd-brand">&#10022; SREE GOLD &#10022;</div>' +
-      '<div class="hd-sub">M A N U F A C T U R I N G</div>' +
       '<div><span class="hd-tag">CALCULATION RECEIPT</span></div>' +
       (invNum ? '<div class="hd-inv">' + invNum + '</div>' : '') +
       '<div><span class="hd-status" style="color:' + statusColor + '">' + statusLabel + '</span></div>' +
     '</div>' +
 
     /* CUSTOMER */
-    '<div class="cust">' +
-      row('Customer', customer.name) +
-      row('Mobile',   customer.mobile) +
-      row('Date',     now) +
-    '</div>' +
+    row('Customer', customer.name) +
+    row('Mobile',   customer.mobile) +
+    row('Date',     now) +
+    div('=') +
 
     /* CURRENT ORDER */
-    '<div class="st">Current Order</div>' +
-    '<div style="padding:3px 0">' +
-      row('Metal',         metalLabel) +
-      row('Gold Weight',   f3(order.goldInput)  + ' g') +
-      row('Purity',        safeNum(order.purityPercent).toFixed(2) + ' %') +
-      row('Fine Gold',     f3(order.fineGold)   + ' g', true) +
-      row('Customer Fine', f3(order.customerFine) + ' g') +
-    '</div>' +
-    sep +
+    sectionTitle('Current Order') +
+    div('-') +
+    row('Metal',         metalLabel) +
+    row('Gold Weight',   f3(order.goldInput)  + ' g') +
+    row('Purity',        safeNum(order.purityPercent).toFixed(2) + ' %') +
+    row('Fine Gold',     f3(order.fineGold)   + ' g', true) +
+    row('Customer Fine', f3(order.customerFine) + ' g') +
+    div('-') +
+    row('Current Order Bal.', f3(bal) + ' g', true) +
+    //div('-') +
 
-    /* BALANCE TABLE */
-    '<table class="bal-table">' +
-      '<tr>' +
-        '<td class="h">Prev. Balance</td>' +
-        '<td class="h">This Order</td>' +
-        '<td class="h">Net Balance</td>' +
-      '</tr>' +
-      '<tr>' +
-        '<td class="v" style="color:' + colorOf(prevBal) + '">' + f3(prevBal) + ' g</td>' +
-        '<td class="v" style="color:' + colorOf(bal)     + '">' + f3(bal)     + ' g</td>' +
-        '<td class="v" style="color:' + colorOf(netBal)  + '">' + f3(netBal)  + ' g</td>' +
-      '</tr>' +
-      '<tr>' +
-        '<td class="d">' + dirOf(prevBal) + '</td>' +
-        '<td class="d">' + dirOf(bal)     + '</td>' +
-        '<td class="d">' + dirOf(netBal)  + '</td>' +
-      '</tr>' +
-    '</table>' +
+    /* PAYMENT — only if gold price entered */
+    /*(goldPrice > 0
+      ? row('Gold Price',       'Rs. ' + f1(goldPrice) + '/g') +
+        row('Cash(Gold) Value', f1(cashGoldValue)) +
+        div('-') +
+        row('Cash(Gold) Paid',  f1(cashPaid), true) +
+        (disc > 0
+          ? row('Discount', '- Rs.' + f2(disc))
+          : '') +
+        (taxRate > 0
+          ? row('GST/Tax (' + taxRate + '%)', '+ Rs.' + f2(taxAmt))
+          : '') +
+        row('Order Value', 'Rs. ' + f2(grandTotal)) +
+        div('-')
+      : '') +
+
+    /* CASH = GOLD SETTLEMENT — only if both goldPrice and cashPaid present */
+    (goldPrice > 0 && cashPaid > 0
+  ? //div('-') +
+    //row('Cash = Gold Settlement', '') +
+    div('-') +
+    //row('Balance', f3(bal) + ' g') +
+    row('Gold Price', 'Rs. ' + f1(goldPrice) + '/g') +
+    row('Gold Value', 'Rs. ' + f1(cashGoldValue)) +
+    row('Cash Paid', 'Rs. ' + f1(cashPaid), true) +
+    div('-') +
+    row('***',
+      cashGoldDiff > 0
+        ? 'Overpaid: Rs.' + f2(cashGoldDiff) + ' — Credit due'
+        : cashGoldDiff < 0
+          ? 'Due: Rs.' + f2(Math.abs(cashGoldDiff)) + ' — Balance pending'
+          : '✓ Fully Settled') +
+    div('-')
+  : '') +
+
+    /* BALANCE SUMMARY */
+    row('Previous Net Bal',   f3(prevBal) + ' g', true) +
+    row('This Order Balance', f3(bal)     + ' g', true) +
+    div('=') +
 
     /* NET BALANCE HERO */
     '<div class="net">' +
       '<div class="net-lbl">Net Balance</div>' +
-      '<div class="net-val" style="color:' + colorOf(netBal) + '">' + f3(netBal) + ' g</div>' +
-      '<div class="net-dir">' + dirOf(netBal) + '</div>' +
+      '<div class="net-val" style="color:' + c(netBal) + '">' + f3(netBal) + ' g</div>' +
+      '<div class="net-dir">' + dir(netBal) + '</div>' +
     '</div>' +
 
     /* FOOTER */
-    '<div class="ft">' +
-      '<div class="ft-line"></div>' +
-      '<div class="ft-txt">Thank you for your business!</div>' +
-      '<div class="ft-line"></div>' +
-    '</div>' +
+    '<div class="ft">Thank you for your business!</div>' +
 
-    /* BT status banner + print button (hidden on print) */
+    /* BT banner + print button */
     btBanner +
     '<button class="print-btn no-print" onclick="window.print()">&#128424;&nbsp; Print Receipt</button>' +
-
-    /* Auto-print only if Bluetooth failed or unavailable */
     (btStatus !== 'ok' ? '<script>window.onload=function(){window.print();}<\/script>' : '') +
     '</body></html>';
 
