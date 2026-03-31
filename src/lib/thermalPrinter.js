@@ -438,10 +438,6 @@ function buildReceiptData(customer, records, totals, userProfile) {
 
   // ══════════════════════════════════════════
   // SECTION 1: GOLD CALCULATION DETAILS
-  //
-  // Date    |    Gold| Pur% |   Fine|  CustF|    Bal
-  //    8   1     8  1   6  1    7  1    7  1    7
-  // = 48 chars exactly ✓
   // ══════════════════════════════════════════
   addCmd([ESC, 0x61, 1]);
   addCmd([ESC, 0x45, 1]);
@@ -485,7 +481,7 @@ function buildReceiptData(customer, records, totals, userProfile) {
 
   addLine(sep('-', W));
 
-  // Totals row (no "T" — starts with TOTALS in Date column)
+  // Totals row (TOTALS in Date column)
   addCmd([ESC, 0x45, 1]);
   addLine(goldRow(
     'TOTALS',

@@ -1344,8 +1344,8 @@ function CustomerForm({ customers, onCustomerAdded }) {
             <label className="form-label" htmlFor="customer-name">Customer Name</label>
             <div style={S.inputWrap}>
               <span style={S.inputIcon}>👤</span>
-              <input id="customer-name" type="text" className="form-input" style={S.inputPadded}
-                placeholder="Enter customer name" value={name} onChange={(e) => setName(e.target.value)} disabled={saving} />
+              <input id="customer-name" type="text" className="form-input" style={{ ...S.inputPadded, textTransform: 'uppercase' }}
+                placeholder="Enter customer name" value={name} onChange={(e) => setName(e.target.value.toUpperCase())} disabled={saving} />
             </div>
           </div>
 

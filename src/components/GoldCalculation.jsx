@@ -1300,7 +1300,8 @@ function GoldCalculation({ customers, onCalculationSaved }) {
           </div>
 
           {/* Live preview */}
-          {(goldInput || purityPercent) && (
+
+          {/*(goldInput || purityPercent) && (
             <div className="gc-preview">
               <div className="gc-preview-cell">
                 <div className="gc-preview-val">{fmtG(fineGold)}</div>
@@ -1318,13 +1319,14 @@ function GoldCalculation({ customers, onCalculationSaved }) {
               </div>
             </div>
           )}
+          
 
           {/* Balance result */}
           {balance !== 0 && goldInput && customerFine && (
             <div className={`gc-result gc-result--${balance > 0 ? 'pos' : 'neg'}`}>
               <div className="gc-result-lbl">Balance</div>
               <div className="gc-result-val" style={{ color: balColor(balance) }}>{fmtG(balance)}<span>g</span></div>
-              <div className="gc-result-sub">{balance > 0 ? '↑ Manufacturer owes customer' : '↓ Customer owes manufacturer'}</div>
+              <div className="gc-result-sub">{balance > 0 ? '↑ Customer pays the amount' : '↓ Manufacturer pays to the customer'}</div>
             </div>
           )}
 
@@ -1343,19 +1345,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
               {showBilling && (
                 <div className="gc-billing-section gc-slideDown">
                   <div className="gc-grid" style={{ marginBottom:'0' }}>
-                    {/* Metal Type */}
-                    <div className="gc-form-group" style={{ gridColumn:'1 / -1' }}>
-                      <label className="gc-label">Metal Type</label>
-                      <div className="gc-metal-group">
-                        {['gold','silver','platinum'].map(m => (
-                          <button type="button" key={m}
-                            className={`gc-metal-btn${metalType === m ? ' active' : ''}`}
-                            onClick={() => setMetalType(m)}>
-                            {m === 'gold' ? '🥇' : m === 'silver' ? '🥈' : '🥉'} {m.charAt(0).toUpperCase()+m.slice(1)}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    
                     {/* Gold Price */}
                     <div className="gc-form-group">
                       <label className="gc-label">Gold Price <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>— ₹ per gram</span></label>
@@ -1395,15 +1385,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     {/* Bill Status */}
                     <div className="gc-form-group" style={{ gridColumn:'1 / -1' }}>
                       <label className="gc-label">Bill Status</label>
-                      <div className="gc-status-group">
-                        {[['draft','📝','Draft'],['confirmed','✅','Confirmed'],['paid','💳','Paid']].map(([s, ico, lbl]) => (
-                          <button type="button" key={s}
-                            className={`gc-status-btn gc-status-btn--${s}${billStatus === s ? ` active-${s}` : ''}`}
-                            onClick={() => setBillStatus(s)}>
-                            {ico} {lbl}
-                          </button>
-                        ))}
-                      </div>
+                      
                     </div>
                   </div>
 
@@ -1414,10 +1396,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     </div>
 
                     {/* Current Order Details */}
-                    <div className="gc-bill-row">
-                      <span className="gc-bill-row-lbl">Metal</span>
-                      <span className="gc-bill-row-val" style={{ textTransform:'capitalize' }}>{metalType}</span>
-                    </div>
+                    
                     <div className="gc-bill-row">
                       <span className="gc-bill-row-lbl">Gold Weight</span>
                       <span className="gc-bill-row-val">{fmtG(parseFloat(goldInput)||0)} g</span>
@@ -1472,7 +1451,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     {parseFloat(goldPrice) > 0 && (
                       <div className="gc-bill-row">
                         <span className="gc-bill-row-lbl">Order Value</span>
-                        <span className="gc-bill-row-val">₹{grandTotal.toFixed(2)}</span>
+                        <span className="gc-bill-row-val">₹{grandTotal.toFixed(1)}</span>
                       </div>
                     )}
 
@@ -1501,8 +1480,8 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                             <span className="gc-bill-total-val" style={{ color: balColor(netDisplay) }}>
                               {fmtG(netDisplay)} g
                             </span>
-                            <div style={{ fontSize:'0.7rem', color:'var(--t4)', marginTop:'6px', fontStyle:'italic', fontWeight:300, textAlign:'center', width:'100%' }}>
-                              {netDisplay >= 0 ? '↑ Manufacturer owes customer' : '↓ Customer owes manufacturer'}
+                            <div style={{ fontSize:'0.8rem', color:'var(--t4)', marginTop:'6px', fontStyle:'italic', fontWeight:300, textAlign:'center', width:'100%' }}>
+                              {netDisplay >= 0 ? '↑ Customer pays the amount' : '↓ Manufacturer pays to the customer'}
                             </div>
                           </>
                         );

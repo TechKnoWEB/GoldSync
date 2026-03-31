@@ -696,7 +696,7 @@ export default function Dashboard() {
   const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [rawData, setRawData]       = useState(null);
-  const [period, setPeriod]         = useState('monthly');
+  const [period, setPeriod]         = useState('daily'); //Set Daily / Monthly as per your requirements.
   const lastFetch = useRef(null);
 
   // ── Single fetch, period switching is instant (client-side filter) ──────────
