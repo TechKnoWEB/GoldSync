@@ -455,7 +455,7 @@ const injectDashboardStyles = () => {
     .db-period-badge {
       font-size: .62rem; font-weight: 700;
       background: rgba(212,175,55,.08);
-      color: var(--gold-dk, #8a6c1a);
+      color: var(--gold, #d4af37);
       border: 1px solid rgba(212,175,55,.14);
       padding: 2px 8px; border-radius: 100px;
       letter-spacing: .4px;
@@ -481,6 +481,7 @@ const injectDashboardStyles = () => {
     @media (max-width: 480px) {
       .db-kpi-strip { grid-template-columns: 1fr 1fr; }
       .db-mode-grid  { grid-template-columns: 1fr 1fr; }
+      .db-period-tab { padding: 6px 9px; font-size: .68rem; }
     }
   `;
   document.head.appendChild(el);
@@ -488,7 +489,7 @@ const injectDashboardStyles = () => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmtG  = n => Number(n || 0).toFixed(3);
-const fmtC  = n => Number(n || 0).toFixed(1);
+const fmtC  = n => Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 const fmtK  = n => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 const fmtDate = d => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 const fmtDateShort = d => new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
@@ -953,7 +954,7 @@ export default function Dashboard() {
           glowColor="radial-gradient(ellipse at top left, rgba(251,191,36,0.05), transparent)"
           trendLabel={trends.cash.pct !== null ? `${trends.cash.dir === 'pos' ? '↑' : trends.cash.dir === 'neg' ? '↓' : '◈'} ${trends.cash.pct}% ${range.vsLabel}` : range.vsLabel}
           trendDir={trends.cash.dir}
-          decimals={1}
+          decimals={0}
           animDelay={0.25}
         />
       </div>
@@ -1004,7 +1005,7 @@ export default function Dashboard() {
               {/* Axis labels */}
               <div style={{ display: 'flex', gap: '4px' }}>
                 {activityBars.map((b, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '.58rem', color: 'var(--t5, #3a3428)', fontWeight: 500, letterSpacing: '.3px', lineHeight: 1.2 }}>
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '.58rem', color: 'var(--t4, #6e6250)', fontWeight: 600, letterSpacing: '.3px', lineHeight: 1.2 }}>
                     {b.label}
                   </div>
                 ))}
@@ -1055,14 +1056,13 @@ export default function Dashboard() {
           <table className="db-sum-table">
             <tbody>
               {[
-                { label: 'Total Gold In',   val: `${fmtG(kpis.totalGoldIn)} g`,       color: 'var(--gold, #d4af37)' },
-                { label: 'Total Fine Gold', val: `${fmtG(kpis.totalFine)} g`,          color: 'var(--green, #4ade80)' },
-                { label: 'Customer Fine',   val: `${fmtG(kpis.totalCustFine)} g`,      color: 'var(--t2, #c4b699)' },
-                { label: 'Total Balance',   val: `${fmtG(kpis.totalBalance)} g`,       color: kpis.totalBalance >= 0 ? 'var(--green, #4ade80)' : 'var(--red, #f87171)' },
-                { label: 'Total Paid Gold', val: `${fmtG(kpis.totalPaidGold)} g`,      color: 'var(--orange, #fbbf24)' },
-                { label: 'Net Balance',     val: `${fmtG(kpis.netBalance)} g`,         color: kpis.netBalance >= 0 ? 'var(--green, #4ade80)' : 'var(--red, #f87171)' },
-                { label: 'Cash Collected',  val: `₹ ${fmtC(kpis.totalCash)}`,          color: 'var(--blue, #60a5fa)' },
-                { label: 'Final Balance',   val: `${fmtG(kpis.totalFinalBalance)} g`,  color: kpis.totalFinalBalance >= 0 ? 'var(--green, #4ade80)' : 'var(--red, #f87171)' },
+                { label: 'Total Gold In',    val: `${fmtG(kpis.totalGoldIn)} g`,   color: 'var(--gold, #d4af37)' },
+                { label: 'Total Fine Gold',  val: `${fmtG(kpis.totalFine)} g`,     color: 'var(--green, #4ade80)' },
+                { label: 'Customer Fine',    val: `${fmtG(kpis.totalCustFine)} g`, color: 'var(--t2, #c4b699)' },
+                { label: 'Gross Balance',    val: `${fmtG(kpis.totalBalance)} g`,  color: 'var(--gold, #d4af37)' },
+                { label: 'Paid Gold',        val: `${fmtG(kpis.totalPaidGold)} g`, color: 'var(--orange, #fbbf24)' },
+                { label: 'Net Gold Balance', val: `${fmtG(kpis.netBalance)} g`,    color: kpis.netBalance >= 0 ? 'var(--green, #4ade80)' : 'var(--red, #f87171)' },
+                { label: 'Cash Collected',   val: `₹ ${fmtC(kpis.totalCash)}`,     color: 'var(--blue, #60a5fa)' },
               ].map(({ label, val, color }) => (
                 <tr key={label}>
                   <td>{label}</td>
@@ -1109,7 +1109,7 @@ export default function Dashboard() {
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="db-bar-name">{c.name}</span>
-                      <span style={{ fontSize: '.65rem', color: 'var(--t5, #3a3428)', flexShrink: 0 }}>
+                      <span style={{ fontSize: '.65rem', color: 'var(--t4, #6e6250)', flexShrink: 0 }}>
                         {c.txns} txn{c.txns !== 1 ? 's' : ''}
                       </span>
                     </div>
@@ -1215,7 +1215,8 @@ export default function Dashboard() {
             <p className="db-empty-text">No transactions in this period</p>
           </div>
         ) : (
-          <div className="db-tx-list">
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div className="db-tx-list" style={{ minWidth: '520px' }}>
             <div style={{
               display: 'grid',
               gridTemplateColumns: '1fr 80px 80px 80px 80px 70px',
@@ -1285,6 +1286,7 @@ export default function Dashboard() {
                 </div>
               );
             })}
+          </div>
           </div>
         )}
       </div>

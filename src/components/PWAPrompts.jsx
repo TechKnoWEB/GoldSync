@@ -210,7 +210,12 @@ export function InstallToast({ onInstall, onDismiss }) {
 
 // ── Offline Bar ───────────────────────────────────────────────────────────────
 export function OfflineBar() {
-  useEffect(() => { injectPWAStyles(); }, []);
+  useEffect(() => {
+    injectPWAStyles();
+    // Push page content down so the fixed bar doesn't overlap the header
+    document.body.style.paddingTop = '28px';
+    return () => { document.body.style.paddingTop = ''; };
+  }, []);
 
   return (
     <div className="pwa-offline-bar" role="status" aria-live="polite">

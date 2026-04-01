@@ -1145,6 +1145,43 @@ function GoldCalculation({ customers, onCalculationSaved }) {
     finally { setSaving(false); }
   };
 
+  // ── Print Last from DB — prints the most recent DB record for the selected customer ──
+  const handlePrintLastFromDB = async () => {
+    if (!selectedCustomer || customerRecords.length === 0 || printing) return;
+    const rec  = customerRecords[0]; // ordered desc, so index 0 is most recent
+    setPrinting(true);
+    try {
+      const gp   = parseFloat(rec.gold_price)    || 0;
+      const disc = parseFloat(rec.discount)      || 0;
+      const ta   = parseFloat(rec.tax_amount)    || 0;
+      const bal  = parseFloat(rec.balance)       || 0;
+      const gt   = (Math.abs(bal) * gp - disc) + ta;
+      const order = {
+        metalType:     rec.metal_type    || 'gold',
+        goldInput:     parseFloat(rec.gold_input)     || 0,
+        purityPercent: parseFloat(rec.purity_percent) || 0,
+        fineGold:      parseFloat(rec.fine_gold)      || 0,
+        customerFine:  parseFloat(rec.customer_fine)  || 0,
+        balance:       bal,
+        paidGold:      parseFloat(rec.paid_gold)      || 0,
+        goldPrice:     gp,
+        cashPayment:   parseFloat(rec.cash_payment)   || 0,
+        discount:      disc,
+        taxRate:       parseFloat(rec.tax_rate)       || 0,
+        taxAmt:        ta,
+        grandTotal:    gt,
+        billStatus:    rec.bill_status   || 'draft',
+        notes:         rec.notes        || '',
+        invoiceNumber: rec.invoice_number || '',
+      };
+      const result = await printCurrentOrderBill(selectedCustomer, order, totals.net);
+      toast.success(result.method === 'bluetooth'
+        ? '✓ Re-sent to thermal printer!'
+        : '✓ Print preview opened!');
+    } catch (err) { toast.error(`Print failed: ${err.message}`); }
+    finally { setPrinting(false); }
+  };
+
   // ── Print Last — re-prints the most recently saved record; never inserts a new row ──
   const handlePrintLast = async () => {
     if (!lastSavedData || printing) return;
@@ -1431,10 +1468,18 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                       </div>
                     )}
                     {parseFloat(cashPayment) > 0 && (
-                      <div className="gc-bill-row">
-                        <span className="gc-bill-row-lbl">Cash (Gold) Paid</span>
-                        <span className="gc-bill-row-val" style={{ color:'var(--blue)' }}>₹{fmtC(parseFloat(cashPayment))}</span>
-                      </div>
+                      <>
+                        <div className="gc-bill-row">
+                          <span className="gc-bill-row-lbl">Cash (Gold) Paid</span>
+                          <span className="gc-bill-row-val" style={{ color:'var(--blue)' }}>₹{fmtC(parseFloat(cashPayment))}</span>
+                        </div>
+                        {parseFloat(goldPrice) > 0 && (
+                          <div className="gc-bill-row" style={{ paddingLeft:'12px', opacity:0.75 }}>
+                            <span className="gc-bill-row-lbl" style={{ fontSize:'0.72rem', color:'var(--t3)' }}>↳ Equivalent Gold</span>
+                            <span className="gc-bill-row-val" style={{ fontSize:'0.82rem', color:'var(--blue)' }}>{fmtG(autoPaidGold)} g</span>
+                          </div>
+                        )}
+                      </>
                     )}
                     {discountAmt > 0 && (
                       <div className="gc-bill-row">
@@ -1637,6 +1682,21 @@ function GoldCalculation({ customers, onCalculationSaved }) {
               <span className="gc-empty-ico">📋</span>
               <div className="gc-empty-title">No Records Yet</div>
               <div className="gc-empty-desc">No existing records for this customer. Save a new calculation below to get started.</div>
+            </div>
+          )}
+
+          {/* ── Print Last Order (page-end) — prints most recent DB record without new data entry ── */}
+          {selectedCustomer && customerRecords.length > 0 && (
+            <div style={{ display:'flex', justifyContent:'center', paddingTop:'8px', paddingBottom:'12px' }}>
+              <button
+                type="button"
+                className="gc-btn-print-last"
+                onClick={handlePrintLastFromDB}
+                disabled={printing}
+                title="Print the last saved order for this customer"
+              >
+                {printing ? '⏳ Printing…' : '🔄 Print Last Order'}
+              </button>
             </div>
           )}
         </form>

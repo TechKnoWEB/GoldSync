@@ -713,6 +713,7 @@ function buildCurrentOrderData(customer, order, netBalance) {
   // cashGoldDiff   = cashPaid − cashGoldValue — overpaid (+) or still owes (−)
   var cashGoldValue = bal * goldPrice;
   var cashGoldDiff  = cashPaid - cashGoldValue;
+  var equivGold     = goldPrice > 0 ? cashPaid / goldPrice : 0;
 
   function addCmd() {
     for (var i = 0; i < arguments.length; i++) parts.push(new Uint8Array(arguments[i]));
@@ -738,7 +739,7 @@ function buildCurrentOrderData(customer, order, netBalance) {
   addCmd([ESC, 0x61, 1]);           // center
   addCmd([GS,  0x21, 0x11]);        // 2× width+height
   bold(true);
-  addLine('SREE GOLD');
+  addLine('SHREE GOLD');
   addCmd([GS,  0x21, 0x00]);
   bold(false);
   addLine('CALCULATION RECEIPT');
@@ -762,11 +763,11 @@ function buildCurrentOrderData(customer, order, netBalance) {
   lv('Gold Weight',   f3(order.goldInput) + ' g');
   lv('Purity',        safeNum(order.purityPercent).toFixed(2) + ' %');
   bold(true); lv('Fine Gold',  f3(order.fineGold) + ' g'); bold(false);
-  lv('Customer Fine', f3(order.customerFine) + ' g');
+  lv('Customer Fine', f3(order.customerFine) + ' g'); bold(false);
   divider('-');
 
-  // This Order Balance — bold
-  bold(true); lv('This Order Balance', f3(bal) + ' g'); bold(false);
+  // Current Order Balance — bold
+  bold(true); lv('Current Order Balance', f3(bal) + ' g'); bold(false);
   divider('-');
 
   // ── PAYMENT (only if gold price entered) ──
@@ -775,6 +776,7 @@ function buildCurrentOrderData(customer, order, netBalance) {
     lv('Cash(Gold) Value', f1(cashGoldValue));
     divider('-');
     bold(true); lv('Cash(Gold) Paid', f1(cashPaid)); bold(false);
+    if (cashPaid > 0) { lv('Equiv. Gold', f3(equivGold) + ' g'); }
     if (disc > 0) {
       lv('Discount', '- Rs.' + f2(disc));
     }
@@ -819,7 +821,7 @@ function buildCurrentOrderData(customer, order, netBalance) {
 
   // ── BALANCE SUMMARY ──
   bold(true); lv('Previous Net Bal',    f3(prevBal) + ' g'); bold(false);
-  bold(true); lv('This Order Balance',  f3(bal)     + ' g'); bold(false);
+  bold(true); lv('Current Order Balance',  f3(bal)     + ' g'); bold(false);
   divider('=');
 
   // ── NET BALANCE HERO ──
@@ -858,6 +860,7 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
   var grandTotal    = safeNum(order.grandTotal);
   var cashGoldValue = bal * goldPrice;
   var cashGoldDiff  = cashPaid - cashGoldValue;
+  var equivGold     = goldPrice > 0 ? cashPaid / goldPrice : 0;
 
   var metalLabel  = order.metalType
     ? (order.metalType.charAt(0).toUpperCase() + order.metalType.slice(1))
@@ -972,10 +975,10 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
 
     /* HEADER */
     '<div class="hd">' +
-      '<div class="hd-brand">&#10022; SREE GOLD &#10022;</div>' +
-      '<div><span class="hd-tag">CALCULATION RECEIPT</span></div>' +
+      '<div class="hd-brand">&#10022; SHREE GOLD &#10022;</div>' +
+      '<div><span class="hd-tag">MANUFACTURING RECEIPT</span></div>' +
       (invNum ? '<div class="hd-inv">' + invNum + '</div>' : '') +
-      '<div><span class="hd-status" style="color:' + statusColor + '">' + statusLabel + '</span></div>' +
+      //'<div><span class="hd-status" style="color:' + statusColor + '">' + statusLabel + '</span></div>' +
     '</div>' +
 
     /* CUSTOMER */
@@ -987,11 +990,11 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
     /* CURRENT ORDER */
     sectionTitle('Current Order') +
     div('-') +
-    row('Metal',         metalLabel) +
+    //row('Metal',         metalLabel) +
     row('Gold Weight',   f3(order.goldInput)  + ' g') +
     row('Purity',        safeNum(order.purityPercent).toFixed(2) + ' %') +
-    row('Fine Gold',     f3(order.fineGold)   + ' g', true) +
-    row('Customer Fine', f3(order.customerFine) + ' g') +
+    row('Fine Gold',     f3(order.fineGold)   + ' g', ) +
+    row('Customer Fine', f3(order.customerFine) + ' g', true) +
     div('-') +
     row('Current Order Bal.', f3(bal) + ' g', true) +
     //div('-') +
@@ -1022,18 +1025,21 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
     row('Gold Value', 'Rs. ' + f1(cashGoldValue)) +
     row('Cash Paid', 'Rs. ' + f1(cashPaid), true) +
     div('-') +
-    row('***',
-      cashGoldDiff > 0
-        ? 'Overpaid: Rs.' + f2(cashGoldDiff) + ' — Credit due'
-        : cashGoldDiff < 0
-          ? 'Due: Rs.' + f2(Math.abs(cashGoldDiff)) + ' — Balance pending'
-          : '✓ Fully Settled') +
+    (cashPaid > 0 ? row('Equiv. Gold', f3(equivGold) + ' g', true) : '') +
+    //div('-') +
+
+    //row('[Adjusted in NetBal.]',
+    //  cashGoldDiff > 0
+    //    ? 'Overpaid: Rs.' + f2(cashGoldDiff) + ''//' — Credit due'
+    //    : cashGoldDiff < 0
+    //      ? 'Due: Rs.' + f2(Math.abs(cashGoldDiff)) + ''//' — Balance pending'
+    //      : '✓ Fully Settled') +
     div('-')
   : '') +
 
     /* BALANCE SUMMARY */
     row('Previous Net Bal',   f3(prevBal) + ' g', true) +
-    row('This Order Balance', f3(bal)     + ' g', true) +
+    row('Current Order Balance', f3(bal)     + ' g', true) +
     div('=') +
 
     /* NET BALANCE HERO */
