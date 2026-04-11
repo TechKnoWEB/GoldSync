@@ -1,10 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* Map Tailwind's dark: variant to the data-theme attribute used by this app */
+@variant dark (&:where([data-theme="dark"] *));
+
 /* ============================================
    Gold Calculator — Design System CSS
    Font: Lexend (via Google Fonts)
    Theme: Burnished Obsidian & Refined Gold
    ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ============================================
    CSS Variables / Design Tokens
@@ -191,46 +195,6 @@ body {
   background-color: var(--bg-primary);
 }
 
-/* ============================================
-   Header
-   ============================================ */
-.app-header {
-  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-primary) 100%);
-  border-bottom: 1px solid var(--border-lg);
-  text-align: center;
-  padding: 32px 16px 24px;
-  margin: 0 -16px;
-  position: relative;
-}
-
-.app-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 55%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
-  opacity: 0.6;
-}
-
-.header-title {
-  font-family: var(--font);
-  font-size: 1.8rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--gold-bright);
-  margin-bottom: 6px;
-}
-
-.header-subtitle {
-  font-family: var(--font);
-  font-size: 0.88rem;
-  color: var(--text-dim);
-  font-weight: 300;
-  letter-spacing: 0.2px;
-}
 
 /* ============================================
    Tab Navigation
@@ -778,22 +742,6 @@ body {
   font-weight: 300;
 }
 
-/* ============================================
-   Footer
-   ============================================ */
-.app-footer {
-  text-align: center;
-  padding: 20px 16px;
-  border-top: 1px solid var(--border-xs);
-  margin-top: auto;
-}
-
-.app-footer p {
-  font-family: var(--font);
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-weight: 300;
-}
 
 /* ============================================
    Toast Overrides

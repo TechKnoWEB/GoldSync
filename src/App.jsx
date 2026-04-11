@@ -6,6 +6,7 @@ import CustomerForm    from './components/CustomerForm.jsx';
 import GoldCalculation from './components/GoldCalculation.jsx';
 import Records         from './components/Records.jsx';
 import Dashboard       from './components/Dashboard.jsx';
+import XRFCertificate  from './components/XRFCertificate.jsx';
 import AuthPage        from './components/AuthPage.jsx';
 import { UpdateToast, InstallToast, OfflineBar } from './components/PWAPrompts.jsx';
 import { usePWA } from './hooks/usePWA.js';
@@ -14,7 +15,8 @@ import { usePWA } from './hooks/usePWA.js';
 
 /* ─── Inject global design system ────────────────────────────────────────── */
 const injectAppStyles = () => {
-  if (document.getElementById('app-design-system')) return;
+  const existing = document.getElementById('app-design-system');
+  if (existing) existing.remove();
   const el = document.createElement('style');
   el.id = 'app-design-system';
   el.textContent = `
@@ -78,33 +80,43 @@ const injectAppStyles = () => {
     .app-orb-b{bottom:-8%;left:-4%;width:360px;height:360px;background:radial-gradient(circle,rgba(212,175,55,.05) 0%,transparent 68%);animation:orb-b 11s ease-in-out infinite}
     .app-orb-c{top:50%;left:50%;transform:translate(-50%,-50%);width:340px;height:340px;background:radial-gradient(circle,rgba(212,175,55,.025) 0%,transparent 68%);animation:orb-c 14s ease-in-out infinite}
 
-    .app-header{position:relative;z-index:20;background:linear-gradient(180deg,rgba(212,175,55,.07) 0%,transparent 100%);border-bottom:1px solid var(--border-sm);transition:background .4s,border-color .3s}
-    .app-header-inner{max-width:1200px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+    .app-header{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--bg-nav);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border-sm);transition:background .4s,border-color .3s}
+    .app-header-inner{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .app-header-left{display:flex;align-items:center;gap:14px;min-width:0}
     .app-logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,var(--gold-dk),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;box-shadow:0 4px 20px rgba(212,175,55,.3),inset 0 1px 0 rgba(255,255,255,.18);cursor:pointer;transition:box-shadow .3s,transform .3s}
-    .app-logo:hover{box-shadow:0 6px 28px rgba(212,175,55,.4);transform:scale(1.05)}
-    .app-header-title{font-size:1.4rem;font-weight:900;letter-spacing:-.03em;line-height:1.15;text-align:left;background:linear-gradient(120deg,var(--gold) 0%,var(--gold-lt) 45%,var(--gold-br) 70%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4.5s linear infinite}    .app-header-sub{font-size:.7rem;font-weight:300;color:var(--t4);margin-top:2px}
-    .app-header-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
-    .app-header-accent{position:absolute;bottom:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.28),transparent)}
+    .app-logo:hover{box-shadow:0 6px 28px rgba(212,175,55,.5),0 0 0 3px rgba(212,175,55,.14);transform:scale(1.06) rotate(-4deg)}
+    .app-header-title{font-size:1.4rem;font-weight:900;letter-spacing:-.03em;line-height:1.15;text-align:left;background:linear-gradient(120deg,var(--gold) 0%,var(--gold-lt) 45%,var(--gold-br) 70%,var(--gold) 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4.5s linear infinite}
+    .app-header-sub{font-size:.68rem;font-weight:300;color:var(--t4);margin-top:3px;letter-spacing:.02em}
+    .app-header-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+    .app-header-sep{width:1px;height:22px;background:var(--border-sm);margin:0 3px;flex-shrink:0}
+    .app-header-accent{position:absolute;bottom:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.32),transparent)}
 
-    .app-user-pill{display:flex;align-items:center;gap:9px;background:var(--bg-raised);border:1px solid var(--border-sm);border-radius:100px;padding:5px 13px 5px 6px;cursor:default;transition:border-color .25s}
-    .app-user-pill:hover{border-color:var(--border-md)}
-    .app-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dk),var(--gold));display:flex;align-items:center;justify-content:center;font-size:.76rem;font-weight:800;color:#1a1000;flex-shrink:0}
-    .app-user-name{font-size:.74rem;font-weight:600;color:var(--t2);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .app-user-email{font-size:.6rem;font-weight:300;color:var(--t5);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .app-user-pill{display:flex;align-items:center;gap:9px;background:var(--bg-raised);border:1px solid var(--border-sm);border-radius:100px;padding:4px 13px 4px 5px;cursor:default;transition:border-color .25s,box-shadow .25s}
+    .app-user-pill:hover{border-color:var(--border-md);box-shadow:0 2px 12px rgba(212,175,55,.08)}
+    .app-avatar-wrap{position:relative;flex-shrink:0}
+    .app-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dk),var(--gold));display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#1a1000;border:2px solid rgba(212,175,55,.25)}
+    .app-avatar-status{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg-raised)}
+    .app-user-name{font-size:.74rem;font-weight:600;color:var(--t2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .app-user-role{font-size:.61rem;font-weight:300;color:var(--t5);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-    .app-theme-btn{display:flex;align-items:center;gap:8px;background:var(--bg-raised);border:1px solid var(--border-sm);border-radius:100px;padding:7px 13px 7px 9px;cursor:pointer;font-family:var(--font);font-size:.74rem;font-weight:600;color:var(--t3);transition:all .28s var(--ease);white-space:nowrap;flex-shrink:0}
+    .app-theme-btn{display:flex;align-items:center;gap:8px;background:var(--bg-raised);border:1px solid var(--border-sm);border-radius:100px;padding:7px 13px 7px 9px;cursor:pointer;font-family:var(--font);font-size:.74rem;font-weight:600;color:var(--t3);transition:all .28s var(--ease);white-space:nowrap;flex-shrink:0;outline:none}
     .app-theme-btn:hover{border-color:var(--border-md);color:var(--t1);box-shadow:var(--sh-gold);transform:translateY(-1px)}
-    .app-theme-track{width:28px;height:16px;background:var(--bg-input);border:1px solid var(--border-md);border-radius:100px;position:relative;transition:background .3s;flex-shrink:0}
-    [data-theme="light"] .app-theme-track{background:rgba(184,134,11,.12);border-color:rgba(184,134,11,.3)}
-    .app-theme-thumb{position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--gold);transition:transform .3s var(--ease);box-shadow:0 1px 5px rgba(212,175,55,.4)}
-    [data-theme="light"] .app-theme-thumb{transform:translateX(12px)}
+    .app-theme-icon{font-size:.95rem;line-height:1;display:inline-block;transition:transform .4s var(--ease)}
+    .app-theme-btn:hover .app-theme-icon{transform:rotate(22deg) scale(1.1)}
+    .app-theme-track{width:30px;height:17px;background:var(--bg-input);border:1px solid var(--border-md);border-radius:100px;position:relative;transition:background .3s;flex-shrink:0}
+    [data-theme="light"] .app-theme-track{background:rgba(184,134,11,.14);border-color:rgba(184,134,11,.32)}
+    .app-theme-thumb{position:absolute;top:2px;left:2px;width:11px;height:11px;border-radius:50%;background:var(--gold);transition:transform .3s var(--ease);box-shadow:0 1px 6px rgba(212,175,55,.5)}
+    [data-theme="light"] .app-theme-thumb{transform:translateX(13px)}
+    .app-theme-label{font-size:.74rem}
 
-    .app-signout{display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border-xs);border-radius:9px;padding:7px 12px;cursor:pointer;font-family:var(--font);font-size:.72rem;font-weight:500;color:var(--t4);transition:all .25s var(--ease)}
-    .app-signout:hover{border-color:rgba(248,113,113,.35);color:var(--red);background:rgba(248,113,113,.06);transform:translateY(-1px)}
+    .app-signout{display:flex;align-items:center;gap:6px;background:none;border:1px solid var(--border-xs);border-radius:9px;padding:7px 12px;cursor:pointer;font-family:var(--font);font-size:.72rem;font-weight:500;color:var(--t4);transition:all .25s var(--ease);outline:none;white-space:nowrap}
+    .app-signout:hover{border-color:rgba(248,113,113,.4);color:var(--red);background:rgba(248,113,113,.07);transform:translateY(-1px);box-shadow:0 4px 12px rgba(248,113,113,.1)}
+    .app-signout svg{transition:transform .25s var(--ease)}
+    .app-signout:hover svg{transform:translateX(2px)}
 
-    .app-nav{position:sticky;top:0;z-index:100;background:var(--bg-nav);border-bottom:1px solid var(--border-xs);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:background .4s,border-color .3s}
-    .app-nav-inner{max-width:1200px;margin:0 auto;padding:10px 24px;display:flex;gap:4px}
+    .app-nav{position:fixed;top:70px;left:0;right:0;z-index:199;background:var(--bg-nav);border-bottom:1px solid var(--border-xs);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:background .4s,border-color .3s}
+    .app-nav-inner{max-width:1200px;margin:0 auto;padding:6px 24px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+    .app-nav-inner::-webkit-scrollbar{display:none}
     .app-tab{position:relative;display:flex;align-items:center;gap:8px;padding:10px 17px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--t4);font-family:var(--font);font-size:.84rem;font-weight:500;cursor:pointer;transition:all .25s var(--ease);white-space:nowrap;outline:none}
     .app-tab:hover:not(.on){background:var(--gold-glow);color:var(--t2);border-color:var(--border-xs);transform:translateY(-1px)}
     .app-tab.on{background:linear-gradient(135deg,rgba(212,175,55,.13),rgba(212,175,55,.07));color:var(--gold-br);border-color:var(--border-md);font-weight:700;box-shadow:0 2px 10px rgba(212,175,55,.12),inset 0 1px 0 rgba(255,255,255,.04)}
@@ -114,9 +126,8 @@ const injectAppStyles = () => {
     .app-badge-off{background:rgba(212,175,55,.1);color:var(--t4)}
     .app-badge-on{background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:#1a1000}
 
-    .app-main{position:relative;z-index:1;flex:1;max-width:1200px;width:100%;margin:0 auto;padding:24px;animation:fadeUp .38s var(--ease)}
-    .app-content{background:rgba(18,16,12,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:20px;border:1px solid var(--border-xs);padding:28px;box-shadow:var(--sh-lg),inset 0 1px 0 rgba(255,255,255,.02);min-height:calc(100vh - 280px);transition:background .4s,border-color .3s}
-    [data-theme="light"] .app-content{background:rgba(245,240,230,.65)}
+    .app-main{position:relative;z-index:1;flex:1;width:100%;padding:0;margin-top:122px;animation:fadeUp .38s var(--ease)}
+    .app-content{padding:28px 32px;min-height:calc(100vh - 200px);transition:background .4s}
 
     .app-loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:20px}
     .app-spinner{width:42px;height:42px;border:3px solid var(--border-sm);border-top-color:var(--gold);border-radius:50%;animation:spin .75s linear infinite}
@@ -133,15 +144,20 @@ const injectAppStyles = () => {
     .app-footer-gem{color:var(--gold-dk);font-size:.6rem}
 
     @media(max-width:640px){
-      .app-header-inner{padding:12px 14px;gap:10px}
+      .app-header-inner{padding:8px 14px;gap:8px}
       .app-header-title{font-size:1.15rem}
-      .app-nav-inner{padding:8px 10px;overflow-x:auto;scrollbar-width:none}
+      .app-header-sub{display:none}
+      .app-nav{top:58px}
+      .app-nav-inner{padding:5px 10px;overflow-x:auto;scrollbar-width:none}
       .app-nav-inner::-webkit-scrollbar{display:none}
       .app-tab{padding:8px 10px;font-size:.78rem}
-      .app-main{padding:10px}
-      .app-content{padding:14px;border-radius:14px}
-      .app-user-name,.app-user-email,.app-header-sub{display:none}
-      .app-header-right{gap:6px}
+      .app-main{margin-top:106px;padding:0}
+      .app-content{padding:12px 14px}
+      .app-user-name,.app-user-role,.app-theme-label,.app-header-sep{display:none}
+      .app-header-right{gap:5px}
+      .app-theme-btn{padding:7px 9px}
+      .app-signout{padding:7px 10px}
+      .app-signout span{display:none}
     }
   `;
   document.head.appendChild(el);
@@ -192,7 +208,7 @@ export default function App() {
     toast.success('Signed out successfully');
   };
 
-  const [activeTab,   setActiveTab]   = useState('dashboard');
+  const [activeTab,   setActiveTab]   = useState('calculate');
   const [customers,   setCustomers]   = useState([]);
   const [recordCount, setRecordCount] = useState(0);
   const [appLoading,  setAppLoading]  = useState(true);
@@ -256,10 +272,11 @@ export default function App() {
   const initial = displayName.charAt(0).toUpperCase();
 
   const TABS = [
-    { id:'dashboard', label:'Dashboard', ico:'◈' },
-    { id:'calculate', label:'Calculate',  ico:'⚖️' },
-    { id:'customers', label:'Customers',  ico:'👤' },
-    { id:'records',   label:'Records',    ico:'📋', badge: recordCount },
+    { id:'dashboard',   label:'Dashboard',   ico:'◈' },
+    { id:'calculate',   label:'Calculate',   ico:'⚖️' },
+    { id:'customers',   label:'Customers',   ico:'👤' },
+    { id:'records',     label:'Records',     ico:'📋', badge: recordCount },
+    { id:'certificate', label:'Certificate', ico:'🪪' },
   ];
 
   const renderContent = () => {
@@ -270,10 +287,11 @@ export default function App() {
       </div>
     );
     switch (activeTab) {
-      case 'dashboard': return <Dashboard />;
-      case 'customers': return <CustomerForm customers={customers} onCustomerAdded={fetchCustomers} />;
-      case 'records':   return <Records onRecordChange={fetchRecordCount} setRecordCount={setRecordCount} />;
-      default:          return <GoldCalculation customers={customers} onCalculationSaved={fetchRecordCount} />;
+      case 'dashboard':   return <Dashboard />;
+      case 'customers':   return <CustomerForm customers={customers} onCustomerAdded={fetchCustomers} />;
+      case 'records':     return <Records onRecordChange={fetchRecordCount} setRecordCount={setRecordCount} />;
+      case 'certificate': return <XRFCertificate />;
+      default:            return <GoldCalculation customers={customers} onCalculationSaved={fetchRecordCount} />;
     }
   };
 
@@ -292,27 +310,37 @@ export default function App() {
       <header className="app-header">
         <div className="app-header-inner">
           <div className="app-header-left">
-            <div className="app-logo" onClick={() => setActiveTab('dashboard')}>✦</div>
+            <div className="app-logo" onClick={() => setActiveTab('dashboard')} title="Go to Dashboard">✦</div>
             <div>
-              <div className="app-header-title">GoldSync </div>
+              <div className="app-header-title">GoldSync</div>
               <div className="app-header-sub">Gold purity &amp; fine gold balance tracking</div>
             </div>
           </div>
           <div className="app-header-right">
-            <div className="app-user-pill">
-              <div className="app-avatar">{initial}</div>
+            <div className="app-user-pill" title={user?.email}>
+              <div className="app-avatar-wrap">
+                <div className="app-avatar">{initial}</div>
+                <div className="app-avatar-status"/>
+              </div>
               <div>
                 <div className="app-user-name">{displayName}</div>
-                <div className="app-user-email">{user?.email}</div>
+                <div className="app-user-role">{user?.email}</div>
               </div>
             </div>
-            <button className="app-theme-btn" onClick={() => setTheme(p => p==='dark'?'light':'dark')}>
-              <span style={{fontSize:'.88rem'}}>{theme==='dark'?'☀️':'🌙'}</span>
+            <div className="app-header-sep"/>
+            <button className="app-theme-btn" onClick={() => setTheme(p => p==='dark'?'light':'dark')}
+              title={theme==='dark' ? 'Switch to Light mode' : 'Switch to Dark mode'}>
+              <span className="app-theme-icon">{theme==='dark'?'☀️':'🌙'}</span>
               <div className="app-theme-track"><div className="app-theme-thumb"/></div>
-              <span>{theme==='dark'?'Light':'Dark'}</span>
+              <span className="app-theme-label">{theme==='dark'?'Light':'Dark'}</span>
             </button>
-            <button className="app-signout" onClick={signOut}>
-              <span>⎋</span><span>Sign Out</span>
+            <button className="app-signout" onClick={signOut} title="Sign out">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
