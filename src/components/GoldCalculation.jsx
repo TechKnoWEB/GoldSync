@@ -1516,22 +1516,22 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                         </div>
                       </>
                     )}
-                    <div className="gc-bill-total-row">
-                      <span className="gc-bill-total-lbl">Net Balance</span>
-                      {(() => {
-                        const netDisplay = (customerRecords.length > 0 ? totals.net : 0) + balance - (parseFloat(paidGold) || 0);
-                        return (
-                          <>
+                    {(() => {
+                      const netDisplay = (customerRecords.length > 0 ? totals.net : 0) + balance - (parseFloat(paidGold) || 0);
+                      return (
+                        <>
+                          <div className="gc-bill-total-row">
+                            <span className="gc-bill-total-lbl">Net Balance</span>
                             <span className="gc-bill-total-val" style={{ color: balColor(netDisplay) }}>
                               {fmtG(netDisplay)} g
                             </span>
-                            <div style={{ fontSize:'0.8rem', color:'var(--t4)', marginTop:'6px', fontStyle:'italic', fontWeight:300, textAlign:'center', width:'100%' }}>
-                              {netDisplay >= 0 ? '↑ Customer pays the amount' : '↓ Manufacturer pays to the customer'}
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </div>
+                          </div>
+                          <div style={{ fontSize:'0.8rem', color:'var(--t4)', marginTop:'6px', fontStyle:'italic', fontWeight:300, textAlign:'center', width:'100%' }}>
+                            {netDisplay >= 0 ? '↑ Customer pays the amount' : '↓ Manufacturer pays to the customer'}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {/* ══ Print & Save + Print Last ══ */}

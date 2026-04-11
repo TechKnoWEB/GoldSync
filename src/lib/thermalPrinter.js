@@ -976,7 +976,7 @@ export async function printCurrentOrderBill(customer, order, netBalance) {
     /* HEADER */
     '<div class="hd">' +
       '<div class="hd-brand">&#10022; SHREE GOLD &#10022;</div>' +
-      '<div><span class="hd-tag">MANUFACTURING RECEIPT</span></div>' +
+      '<div><span class="hd-tag">PAYMENT RECEIPT</span></div>' +
       (invNum ? '<div class="hd-inv">' + invNum + '</div>' : '') +
       //'<div><span class="hd-status" style="color:' + statusColor + '">' + statusLabel + '</span></div>' +
     '</div>' +
