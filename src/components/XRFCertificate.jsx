@@ -500,6 +500,13 @@ const injectStyles = () => {
     .xrf-vbtn.off { background:transparent; color:var(--t3,#888); }
     .xrf-vbtn.off:hover { color:var(--t1,#eee); }
     .xrf-card-stage { border-radius:14px; background: repeating-conic-gradient(rgba(255,255,255,.025) 0% 25%, transparent 0% 50%) 0 0/18px 18px; border:1px solid var(--border-xs,rgba(255,255,255,.05)); padding:20px; display:flex; justify-content:center; overflow-x:auto; }
+    .xrf-card-stage .xrf-card-scaler { transform-origin: top center; }
+    @media(max-width:760px){
+      .xrf-row3 { grid-template-columns:1fr 1fr; }
+      .xrf-page-header { flex-direction:column; align-items:stretch; }
+      .xrf-page-actions { justify-content:flex-end; }
+      .xrf-card-stage { padding:12px; overflow-x:hidden; }
+    }
     .xrf-btn { display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px; border:none; cursor:pointer; font-family:var(--font,Lexend,sans-serif); font-size:.8rem; font-weight:600; transition:all .22s; white-space:nowrap; }
     .xrf-btn:disabled { opacity:.5; cursor:not-allowed; }
     .xrf-btn:not(:disabled):hover { transform:translateY(-1px); }
@@ -659,6 +666,24 @@ export default function XRFCertificate() {
 
   const [view,        setView]        = useState('front');
   const [downloading, setDl]          = useState(false);
+  const stageRef   = useRef(null);
+  const scalerRef  = useRef(null);
+
+  useEffect(() => {
+    const stage  = stageRef.current;
+    const scaler = scalerRef.current;
+    if (!stage || !scaler) return;
+    const update = () => {
+      const available = stage.clientWidth - 24; // subtract padding
+      const scale = Math.min(1, available / CARD_W);
+      scaler.style.transform = `scale(${scale})`;
+      scaler.style.marginBottom = `${(CARD_H * scale) - CARD_H}px`;
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(stage);
+    return () => ro.disconnect();
+  }, []);
 
   const [shopName,    setShopName]    = useState('');
   const [shopAddress, setShopAddress] = useState('Pathar Pratima');
@@ -855,8 +880,10 @@ export default function XRFCertificate() {
             </button>
           </div>
 
-          <div className="xrf-card-stage">
-            {view === 'front' ? <CardFront d={d} /> : <CardBack d={d} />}
+          <div className="xrf-card-stage" ref={stageRef}>
+            <div className="xrf-card-scaler" ref={scalerRef}>
+              {view === 'front' ? <CardFront d={d} /> : <CardBack d={d} />}
+            </div>
           </div>
 
           <div className="xrf-tip">
