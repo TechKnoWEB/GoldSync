@@ -6,13 +6,17 @@ const CARD_W = 700;
 const CARD_H = 440;
 const SCALE  = 3; // export resolution multiplier
 
-const GRADIENT_PRESETS = [
-  { name: 'White',         from: '#ffffff', to: '#ffffff', angle: 135 },
-  { name: 'Midnight Gold', from: '#0d1b2e', to: '#b8860b', angle: 135 },
-  { name: 'Antique Gold',  from: '#7a5c00', to: '#d4af37', angle: 135 },
-  { name: 'Rose Gold',     from: '#3d1515', to: '#c8826e', angle: 135 },
-  { name: 'Deep Navy Gold',from: '#0a1628', to: '#c8960c', angle: 120 },
-];
+const COLOR_PRESETS = {
+  indigo:  { label: 'Royal Indigo',    primary: '#1e40af', secondary: '#3730a3', accent: '#6366f1' },
+  emerald: { label: 'Forest Green',    primary: '#065f46', secondary: '#047857', accent: '#10b981' },
+  crimson: { label: 'Classic Crimson', primary: '#991b1b', secondary: '#7f1d1d', accent: '#ef4444' },
+  navy:    { label: 'Deep Navy',       primary: '#1e3a5f', secondary: '#1e3a8a', accent: '#3b82f6' },
+  purple:  { label: 'Royal Purple',    primary: '#581c87', secondary: '#6b21a8', accent: '#a855f7' },
+  teal:    { label: 'Ocean Teal',      primary: '#115e59', secondary: '#0f766e', accent: '#14b8a6' },
+  slate:   { label: 'Modern Slate',    primary: '#1e293b', secondary: '#334155', accent: '#64748b' },
+  amber:   { label: 'Golden Amber',    primary: '#92400e', secondary: '#78350f', accent: '#f59e0b' },
+  custom:  { label: 'Custom Colour',   primary: '#1e40af', secondary: '#3730a3', accent: '#6366f1' },
+};
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function isLight(hex) {
@@ -46,7 +50,7 @@ function roundRect(ctx, x, y, w, h, r) {
 /* ─── Canvas Drawing: FRONT ─────────────────────────────────────────────── */
 async function drawFront(ctx, d, S) {
   const W = CARD_W * S, H = CARD_H * S;
-  const light = isLight(d.cardGradient.from);
+  const light = isLight(d.cardGradient.primary);
   const cText   = light ? '#111111' : '#f0ece4';
   const cSub    = light ? '#444444' : '#c8bfac';
   const cLabel  = light ? '#666666' : '#9a9080';
@@ -69,8 +73,8 @@ async function drawFront(ctx, d, S) {
   /* ── Header background ── */
   const headerH = 120 * S;
   const hGrad = ctx.createLinearGradient(0, 0, W, headerH);
-  hGrad.addColorStop(0, d.cardGradient.from);
-  hGrad.addColorStop(1, d.cardGradient.to);
+  hGrad.addColorStop(0, d.cardGradient.primary);
+  hGrad.addColorStop(1, d.cardGradient.secondary);
   ctx.fillStyle = hGrad;
   ctx.fillRect(0, 0, W, headerH);
 
@@ -284,7 +288,7 @@ async function drawFront(ctx, d, S) {
 /* ─── Canvas Drawing: BACK ──────────────────────────────────────────────── */
 async function drawBack(ctx, d, S) {
   const W = CARD_W * S, H = CARD_H * S;
-  const light = isLight(d.cardGradient.from);
+  const light = isLight(d.cardGradient.primary);
   const cText   = light ? '#111111' : '#ece5d8';
   const cSub    = light ? '#555555' : '#9a9080';
   const cDivBg  = light ? '#d49e63' : '#e0d09a';
@@ -295,8 +299,8 @@ async function drawBack(ctx, d, S) {
 
   // Card background gradient
   const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-  bgGrad.addColorStop(0, d.cardGradient.from);
-  bgGrad.addColorStop(1, d.cardGradient.to);
+  bgGrad.addColorStop(0, d.cardGradient.primary);
+  bgGrad.addColorStop(1, d.cardGradient.secondary);
   ctx.fillStyle = bgGrad;
   roundRect(ctx, 0, 0, W, H, 10 * S);
   ctx.fill();
@@ -499,13 +503,19 @@ const injectStyles = () => {
     .xrf-vbtn.on { background:linear-gradient(135deg,#a07820,#d4af37); color:#1a1000; }
     .xrf-vbtn.off { background:transparent; color:var(--t3,#888); }
     .xrf-vbtn.off:hover { color:var(--t1,#eee); }
-    .xrf-card-stage { border-radius:14px; background: repeating-conic-gradient(rgba(255,255,255,.025) 0% 25%, transparent 0% 50%) 0 0/18px 18px; border:1px solid var(--border-xs,rgba(255,255,255,.05)); padding:20px; display:flex; justify-content:center; overflow-x:auto; }
-    .xrf-card-stage .xrf-card-scaler { transform-origin: top center; }
-    @media(max-width:760px){
-      .xrf-row3 { grid-template-columns:1fr 1fr; }
+    .xrf-card-stage { border-radius:14px; background: repeating-conic-gradient(rgba(255,255,255,.025) 0% 25%, transparent 0% 50%) 0 0/18px 18px; border:1px solid var(--border-xs,rgba(255,255,255,.05)); padding:12px; position:relative; }
+    .xrf-card-sizer { position:relative; width:100%; }
+    .xrf-card-scaler { position:absolute; top:0; left:50%; transform-origin:top center; }
+    @media(max-width:600px){
+      .xrf-row2 { grid-template-columns:1fr; }
+      .xrf-row3 { grid-template-columns:1fr; }
       .xrf-page-header { flex-direction:column; align-items:stretch; }
-      .xrf-page-actions { justify-content:flex-end; }
-      .xrf-card-stage { padding:12px; overflow-x:hidden; }
+      .xrf-page-actions { justify-content:stretch; }
+      .xrf-page-actions .xrf-btn { flex:1; justify-content:center; }
+      .xrf-vbtn { padding:7px 12px; font-size:.76rem; }
+    }
+    @media(min-width:601px) and (max-width:760px){
+      .xrf-row3 { grid-template-columns:1fr 1fr; }
     }
     .xrf-btn { display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px; border:none; cursor:pointer; font-family:var(--font,Lexend,sans-serif); font-size:.8rem; font-weight:600; transition:all .22s; white-space:nowrap; }
     .xrf-btn:disabled { opacity:.5; cursor:not-allowed; }
@@ -538,7 +548,7 @@ function QRCodeCanvas({ content, size = 75 }) {
 
 /* ─── Card Front Preview (React DOM, browser only) ───────────────────────── */
 function CardFront({ d }) {
-  const light = isLight(d.cardGradient.from);
+  const light = isLight(d.cardGradient.primary);
   const c = {
     text:    light ? '#111111' : '#f0ece4',
     sub:     light ? '#444444' : '#c8bfac',
@@ -550,7 +560,7 @@ function CardFront({ d }) {
 
   return (
     <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:'#ffffff', borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", boxSizing:'border-box', boxShadow:'0 3px 20px rgba(0,0,0,.22)', overflow:'hidden' }}>
-      <div style={{ background: `linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px 10px 0 0' }}>
+      <div style={{ background: `linear-gradient(135deg, ${d.cardGradient.primary}, ${d.cardGradient.secondary})`, borderRadius:'10px 10px 0 0' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', padding:'12px 20px', gap:'10px' }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:'30px', textAlign:'center', fontWeight:800, color:c.text, letterSpacing:'.5px', lineHeight:1.5 }}>{(d.shopName||'YOUR SHOP NAME').toUpperCase()}</div>
@@ -622,7 +632,7 @@ const DEFAULT_CONDITIONS = [
 ];
 
 function CardBack({ d }) {
-  const light = isLight(d.cardGradient.from);
+  const light = isLight(d.cardGradient.primary);
   const c = {
     text:    light ? '#111111' : '#ece5d8',
     sub:     light ? '#555555' : '#9a9080',
@@ -635,7 +645,7 @@ function CardBack({ d }) {
     shadow:  light ? '0 3px 12px rgba(0,0,0,.12)' : '0 3px 20px rgba(0,0,0,.55)',
   };
   return (
-    <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:`linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
+    <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:`linear-gradient(135deg, ${d.cardGradient.primary}, ${d.cardGradient.secondary})`, borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
       <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', userSelect:'none', zIndex:0 }}>
         <div style={{ fontSize:'58px', fontWeight:900, color:c.wmColor, transform:'rotate(-28deg)', textAlign:'center', lineHeight:1.1, whiteSpace:'nowrap', letterSpacing:'1px' }}>{(d.shopName||'GOLDSYNC').toUpperCase()}</div>
       </div>
@@ -667,17 +677,19 @@ export default function XRFCertificate() {
   const [view,        setView]        = useState('front');
   const [downloading, setDl]          = useState(false);
   const stageRef   = useRef(null);
+  const sizerRef   = useRef(null);
   const scalerRef  = useRef(null);
 
   useEffect(() => {
     const stage  = stageRef.current;
+    const sizer  = sizerRef.current;
     const scaler = scalerRef.current;
-    if (!stage || !scaler) return;
+    if (!stage || !sizer || !scaler) return;
     const update = () => {
       const available = stage.clientWidth - 24; // subtract padding
       const scale = Math.min(1, available / CARD_W);
-      scaler.style.transform = `scale(${scale})`;
-      scaler.style.marginBottom = `${(CARD_H * scale) - CARD_H}px`;
+      sizer.style.height = `${CARD_H * scale}px`;
+      scaler.style.transform = `translateX(-50%) scale(${scale})`;
     };
     update();
     const ro = new ResizeObserver(update);
@@ -701,7 +713,7 @@ export default function XRFCertificate() {
   const [copper, setCopper] = useState('');
   const [others, setOthers] = useState('');
 
-  const [cardGradient,   setCardGradient]   = useState(() => GRADIENT_PRESETS[0]);
+  const [cardGradient,   setCardGradient]   = useState(() => COLOR_PRESETS.slate);
   const [productImage,   setProductImage]   = useState(null);
   const [imageOnBack,    setImageOnBack]    = useState(false);
   const [conditionsText, setConditionsText] = useState(() => DEFAULT_CONDITIONS.join('\n'));
@@ -815,23 +827,23 @@ export default function XRFCertificate() {
 
           <div className="xrf-panel">
             <div className="xrf-panel-title">Card Appearance</div>
-            <div className="xrf-label" style={{marginBottom:'8px'}}>Gradient Theme</div>
+            <div className="xrf-label" style={{marginBottom:'8px'}}>Color Theme</div>
             <div className="xrf-color-presets">
-              {GRADIENT_PRESETS.map(p=>(
+              {Object.entries(COLOR_PRESETS).filter(([k])=>k!=='custom').map(([key, p])=>(
                 <div
-                  key={p.name}
-                  className={`xrf-color-swatch${cardGradient.name===p.name?' sel':''}`}
-                  style={{background:`linear-gradient(${p.angle}deg, ${p.from}, ${p.to})`}}
-                  title={p.name}
+                  key={key}
+                  className={`xrf-color-swatch${cardGradient.label===p.label?' sel':''}`}
+                  style={{background:`linear-gradient(135deg, ${p.primary}, ${p.secondary})`}}
+                  title={p.label}
                   onClick={()=>setCardGradient(p)}
                 />
               ))}
             </div>
             <div className="xrf-color-custom-row" style={{gap:'10px',flexWrap:'wrap'}}>
               <label className="xrf-label" style={{marginBottom:0,whiteSpace:'nowrap'}}>Custom from:</label>
-              <input type="color" className="xrf-color-pick" value={cardGradient.from} onChange={e=>setCardGradient(g=>({...g, name:'Custom', from:e.target.value}))} />
+              <input type="color" className="xrf-color-pick" value={cardGradient.primary} onChange={e=>setCardGradient(g=>({...g, label:'Custom Colour', primary:e.target.value}))} />
               <label className="xrf-label" style={{marginBottom:0,whiteSpace:'nowrap'}}>to:</label>
-              <input type="color" className="xrf-color-pick" value={cardGradient.to} onChange={e=>setCardGradient(g=>({...g, name:'Custom', to:e.target.value}))} />
+              <input type="color" className="xrf-color-pick" value={cardGradient.secondary} onChange={e=>setCardGradient(g=>({...g, label:'Custom Colour', secondary:e.target.value}))} />
             </div>
             <div style={{marginTop:'16px'}}>
               <div className="xrf-label">Product Image <span style={{color:'var(--t5,#444)',fontWeight:400}}>(optional)</span></div>
@@ -870,7 +882,7 @@ export default function XRFCertificate() {
 
         {/* ── RIGHT: Preview ── */}
         <div className="xrf-preview-col">
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'10px'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'10px',rowGap:'8px'}}>
             <div className="xrf-view-toggle">
               <button className={`xrf-vbtn ${view==='front'?'on':'off'}`} onClick={()=>setView('front')}>▣ Front Side</button>
               <button className={`xrf-vbtn ${view==='back'?'on':'off'}`} onClick={()=>setView('back')}>▣ Back Side</button>
@@ -881,8 +893,10 @@ export default function XRFCertificate() {
           </div>
 
           <div className="xrf-card-stage" ref={stageRef}>
-            <div className="xrf-card-scaler" ref={scalerRef}>
-              {view === 'front' ? <CardFront d={d} /> : <CardBack d={d} />}
+            <div className="xrf-card-sizer" ref={sizerRef}>
+              <div className="xrf-card-scaler" ref={scalerRef}>
+                {view === 'front' ? <CardFront d={d} /> : <CardBack d={d} />}
+              </div>
             </div>
           </div>
 
