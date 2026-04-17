@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { ClipboardList, Search, AlertTriangle, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabaseClient.js';
 
@@ -96,14 +97,15 @@ function Records({ onRecordChange, setRecordCount }) {
     <div className="tab-content">
       <div className="card">
         <h2 className="card-title">
-          📋 All Calculation Records ({filteredRecords.length})
+          <ClipboardList size={18} style={{display:'inline',verticalAlign:'middle',marginRight:'6px'}} />
+          All Calculation Records ({filteredRecords.length})
         </h2>
 
         <div className="search-wrapper">
           <input
             type="text"
             className="form-input search-input"
-            placeholder="🔍 Search by customer name..."
+            placeholder="Search by customer name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -114,7 +116,8 @@ function Records({ onRecordChange, setRecordCount }) {
           <div className="confirm-dialog-overlay">
             <div className="confirm-dialog">
               <p className="confirm-message">
-                ⚠️ Are you sure you want to delete this record?
+                <AlertTriangle size={16} style={{display:'inline',verticalAlign:'middle',marginRight:'6px'}} />
+                Are you sure you want to delete this record?
               </p>
               <p className="confirm-sub">This action cannot be undone.</p>
               <div className="confirm-buttons">
@@ -128,7 +131,8 @@ function Records({ onRecordChange, setRecordCount }) {
                   className="btn btn-delete-confirm"
                   onClick={() => handleDelete(confirmDelete)}
                 >
-                  🗑️ Delete
+                  <Trash2 size={14} style={{display:'inline',verticalAlign:'middle',marginRight:'4px'}} />
+                  Delete
                 </button>
               </div>
             </div>
@@ -136,7 +140,7 @@ function Records({ onRecordChange, setRecordCount }) {
         )}
 
         {loading ? (
-          <p className="empty-message">⏳ Loading records...</p>
+          <p className="empty-message"><Loader2 size={15} style={{display:'inline',verticalAlign:'middle',marginRight:'5px'}} className="spin" />Loading records...</p>
         ) : filteredRecords.length === 0 ? (
           <p className="empty-message">
             {searchTerm
@@ -187,7 +191,9 @@ function Records({ onRecordChange, setRecordCount }) {
                         disabled={deletingId === record.id}
                         title="Delete this record"
                       >
-                        {deletingId === record.id ? '⏳' : '🗑️'}
+                        {deletingId === record.id
+                          ? <Loader2 size={14} className="spin" />
+                          : <Trash2 size={14} />}
                       </button>
                     </td>
                   </tr>

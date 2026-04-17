@@ -1,22 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import QRCode from 'qrcode';
+import { Camera, Download, Loader2, MonitorSmartphone } from 'lucide-react';
 
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 const CARD_W = 700;
-const CARD_H = 440;
+const CARD_H = 480;
 const SCALE  = 3; // export resolution multiplier
 
-const COLOR_PRESETS = {
-  indigo:  { label: 'Royal Indigo',    primary: '#1e40af', secondary: '#3730a3', accent: '#6366f1' },
-  emerald: { label: 'Forest Green',    primary: '#065f46', secondary: '#047857', accent: '#10b981' },
-  crimson: { label: 'Classic Crimson', primary: '#991b1b', secondary: '#7f1d1d', accent: '#ef4444' },
-  navy:    { label: 'Deep Navy',       primary: '#1e3a5f', secondary: '#1e3a8a', accent: '#3b82f6' },
-  purple:  { label: 'Royal Purple',    primary: '#581c87', secondary: '#6b21a8', accent: '#a855f7' },
-  teal:    { label: 'Ocean Teal',      primary: '#115e59', secondary: '#0f766e', accent: '#14b8a6' },
-  slate:   { label: 'Modern Slate',    primary: '#1e293b', secondary: '#334155', accent: '#64748b' },
-  amber:   { label: 'Golden Amber',    primary: '#92400e', secondary: '#78350f', accent: '#f59e0b' },
-  custom:  { label: 'Custom Colour',   primary: '#1e40af', secondary: '#3730a3', accent: '#6366f1' },
+const KARAT_METAL_PRESETS = {
+  22: { gold: '91.65', silver: '0.60', copper: '7.27', others: '0.48' },
+  20: { gold: '83.35', silver: '3.65', copper: '11.32', others: '1.68' },
+  18: { gold: '75.10', silver: '4.89', copper: '19.50', others: '0.51' },
 };
+
+const GRADIENT_PRESETS = [
+  { name: 'White',         from: '#ffffff', to: '#ffffff', angle: 135 },
+  { name: 'Midnight Gold', from: '#0d1b2e', to: '#b8860b', angle: 135 },
+  { name: 'Antique Gold',  from: '#7a5c00', to: '#d4af37', angle: 135 },
+  { name: 'Rose Gold',     from: '#3d1515', to: '#c8826e', angle: 135 },
+  { name: 'Deep Navy Gold',from: '#0a1628', to: '#c8960c', angle: 120 },
+];
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
 function isLight(hex) {
@@ -50,7 +53,7 @@ function roundRect(ctx, x, y, w, h, r) {
 /* ─── Canvas Drawing: FRONT ─────────────────────────────────────────────── */
 async function drawFront(ctx, d, S) {
   const W = CARD_W * S, H = CARD_H * S;
-  const light = isLight(d.cardGradient.primary);
+  const light = isLight(d.cardGradient.from);
   const cText   = light ? '#111111' : '#f0ece4';
   const cSub    = light ? '#444444' : '#c8bfac';
   const cLabel  = light ? '#666666' : '#9a9080';
@@ -73,8 +76,8 @@ async function drawFront(ctx, d, S) {
   /* ── Header background ── */
   const headerH = 120 * S;
   const hGrad = ctx.createLinearGradient(0, 0, W, headerH);
-  hGrad.addColorStop(0, d.cardGradient.primary);
-  hGrad.addColorStop(1, d.cardGradient.secondary);
+  hGrad.addColorStop(0, d.cardGradient.from);
+  hGrad.addColorStop(1, d.cardGradient.to);
   ctx.fillStyle = hGrad;
   ctx.fillRect(0, 0, W, headerH);
 
@@ -143,16 +146,11 @@ async function drawFront(ctx, d, S) {
 
   // Left 50% background (white already)
   // Right 50% background
-  ctx.fillStyle = 'rgba(0,0,0,0.015)';
+  const sideGrad = ctx.createLinearGradient(W / 2, midY, W, midBottom);
+  sideGrad.addColorStop(0, d.cardGradient.from);
+  sideGrad.addColorStop(1, d.cardGradient.to);
+  ctx.fillStyle = sideGrad;
   ctx.fillRect(W / 2, midY, W / 2, midBottom - midY);
-
-  // Dividing vertical line
-  ctx.strokeStyle = bBorder;
-  ctx.lineWidth   = 1 * S;
-  ctx.beginPath();
-  ctx.moveTo(W / 2, midY);
-  ctx.lineTo(W / 2, midBottom);
-  ctx.stroke();
 
   /* ── Customer Info rows ── */
   const rows = [
@@ -288,7 +286,7 @@ async function drawFront(ctx, d, S) {
 /* ─── Canvas Drawing: BACK ──────────────────────────────────────────────── */
 async function drawBack(ctx, d, S) {
   const W = CARD_W * S, H = CARD_H * S;
-  const light = isLight(d.cardGradient.primary);
+  const light = isLight(d.cardGradient.from);
   const cText   = light ? '#111111' : '#ece5d8';
   const cSub    = light ? '#555555' : '#9a9080';
   const cDivBg  = light ? '#d49e63' : '#e0d09a';
@@ -299,8 +297,8 @@ async function drawBack(ctx, d, S) {
 
   // Card background gradient
   const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-  bgGrad.addColorStop(0, d.cardGradient.primary);
-  bgGrad.addColorStop(1, d.cardGradient.secondary);
+  bgGrad.addColorStop(0, d.cardGradient.from);
+  bgGrad.addColorStop(1, d.cardGradient.to);
   ctx.fillStyle = bgGrad;
   roundRect(ctx, 0, 0, W, H, 10 * S);
   ctx.fill();
@@ -465,7 +463,6 @@ const injectStyles = () => {
   const s = document.createElement('style');
   s.id = 'xrf-ui-styles';
   s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800;900&display=swap');
     .xrf-wrap { animation: fadeUp .38s ease; }
     @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
     .xrf-page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:4px; }
@@ -503,20 +500,9 @@ const injectStyles = () => {
     .xrf-vbtn.on { background:linear-gradient(135deg,#a07820,#d4af37); color:#1a1000; }
     .xrf-vbtn.off { background:transparent; color:var(--t3,#888); }
     .xrf-vbtn.off:hover { color:var(--t1,#eee); }
-    .xrf-card-stage { border-radius:14px; background: repeating-conic-gradient(rgba(255,255,255,.025) 0% 25%, transparent 0% 50%) 0 0/18px 18px; border:1px solid var(--border-xs,rgba(255,255,255,.05)); padding:12px; position:relative; }
-    .xrf-card-sizer { position:relative; width:100%; }
-    .xrf-card-scaler { position:absolute; top:0; left:50%; transform-origin:top center; }
-    @media(max-width:600px){
-      .xrf-row2 { grid-template-columns:1fr; }
-      .xrf-row3 { grid-template-columns:1fr; }
-      .xrf-page-header { flex-direction:column; align-items:stretch; }
-      .xrf-page-actions { justify-content:stretch; }
-      .xrf-page-actions .xrf-btn { flex:1; justify-content:center; }
-      .xrf-vbtn { padding:7px 12px; font-size:.76rem; }
-    }
-    @media(min-width:601px) and (max-width:760px){
-      .xrf-row3 { grid-template-columns:1fr 1fr; }
-    }
+    .xrf-card-stage { border-radius:14px; background: repeating-conic-gradient(rgba(255,255,255,.025) 0% 25%, transparent 0% 50%) 0 0/18px 18px; border:1px solid var(--border-xs,rgba(255,255,255,.05)); padding:20px; display:flex; justify-content:center; overflow-x:auto; }
+    .xrf-card-fit { overflow:hidden; }
+    .xrf-card-inner { transform-origin: top left; }
     .xrf-btn { display:inline-flex; align-items:center; gap:7px; padding:9px 16px; border-radius:10px; border:none; cursor:pointer; font-family:var(--font,Lexend,sans-serif); font-size:.8rem; font-weight:600; transition:all .22s; white-space:nowrap; }
     .xrf-btn:disabled { opacity:.5; cursor:not-allowed; }
     .xrf-btn:not(:disabled):hover { transform:translateY(-1px); }
@@ -530,6 +516,16 @@ const injectStyles = () => {
     .xrf-tip { background:var(--bg-raised,#1e1e2e); border:1px solid var(--border-xs,rgba(255,255,255,.05)); border-radius:10px; padding:11px 14px; font-size:.74rem; color:var(--t4,#666); line-height:1.6; }
     .xrf-tip strong { color:var(--t2,#aaa); }
     .xrf-divider { border:none; border-top:1px solid var(--border-xs,rgba(255,255,255,.05)); margin:12px 0; }
+    @media(max-width:520px){
+      .xrf-layout { gap:14px; }
+      .xrf-panel { padding:14px; }
+      .xrf-row2 { grid-template-columns:1fr; }
+      .xrf-row3 { grid-template-columns:1fr; }
+      .xrf-card-stage { padding:12px; }
+.xrf-vbtn { padding:8px 12px; }
+      /* Prevent mobile browsers (notably iOS Safari) from zooming inputs on focus */
+      .xrf-input { font-size:16px; }
+    }
   `;
   document.head.appendChild(s);
 };
@@ -548,7 +544,7 @@ function QRCodeCanvas({ content, size = 75 }) {
 
 /* ─── Card Front Preview (React DOM, browser only) ───────────────────────── */
 function CardFront({ d }) {
-  const light = isLight(d.cardGradient.primary);
+  const light = isLight(d.cardGradient.from);
   const c = {
     text:    light ? '#111111' : '#f0ece4',
     sub:     light ? '#444444' : '#c8bfac',
@@ -556,11 +552,15 @@ function CardFront({ d }) {
     divBg:   light ? '#ac681fda' : '#e0d09a',
     divText: light ? '#e8dcc0'   : '#1a1200',
   };
-  const body = { text: '#111111', label: '#666666', border: 'rgba(0,0,0,.13)', imgBg: 'rgba(0,0,0,.02)' };
+  const body = {
+    text: '#111111',
+    label: '#666666',
+    border: 'rgba(0,0,0,.13)',
+  };
 
   return (
     <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:'#ffffff', borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", boxSizing:'border-box', boxShadow:'0 3px 20px rgba(0,0,0,.22)', overflow:'hidden' }}>
-      <div style={{ background: `linear-gradient(135deg, ${d.cardGradient.primary}, ${d.cardGradient.secondary})`, borderRadius:'10px 10px 0 0' }}>
+      <div style={{ background: `linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px 10px 0 0' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', padding:'12px 20px', gap:'10px' }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:'30px', textAlign:'center', fontWeight:800, color:c.text, letterSpacing:'.5px', lineHeight:1.5 }}>{(d.shopName||'YOUR SHOP NAME').toUpperCase()}</div>
@@ -602,12 +602,12 @@ function CardFront({ d }) {
             </div>
           </div>
         </div>
-        <div style={{ width:'50%', flexShrink:0, padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'center', background:body.imgBg, borderLeft:`1px solid ${body.border}`, position:'relative', overflow:'hidden' }}>
+        <div style={{ width:'50%', flexShrink:0, padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' }}>
           {d.productImage ? (
             <img src={d.productImage} alt="Product" style={{ maxWidth:'100%', maxHeight:'190px', objectFit:'contain', borderRadius:'8px' }} />
           ) : (
             <div style={{ width:'100%', height:'190px', border:`1.5px dashed ${body.border}`, borderRadius:'10px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'8px' }}>
-              <span style={{ fontSize:'40px', opacity:.3 }}>📷</span>
+              <Camera size={40} style={{ opacity:.3 }} />
               <span style={{ fontSize:'9.5px', color:body.label, fontWeight:500 }}>Product Photo</span>
             </div>
           )}
@@ -632,7 +632,7 @@ const DEFAULT_CONDITIONS = [
 ];
 
 function CardBack({ d }) {
-  const light = isLight(d.cardGradient.primary);
+  const light = isLight(d.cardGradient.from);
   const c = {
     text:    light ? '#111111' : '#ece5d8',
     sub:     light ? '#555555' : '#9a9080',
@@ -645,7 +645,7 @@ function CardBack({ d }) {
     shadow:  light ? '0 3px 12px rgba(0,0,0,.12)' : '0 3px 20px rgba(0,0,0,.55)',
   };
   return (
-    <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:`linear-gradient(135deg, ${d.cardGradient.primary}, ${d.cardGradient.secondary})`, borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
+    <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:`linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
       <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', userSelect:'none', zIndex:0 }}>
         <div style={{ fontSize:'58px', fontWeight:900, color:c.wmColor, transform:'rotate(-28deg)', textAlign:'center', lineHeight:1.1, whiteSpace:'nowrap', letterSpacing:'1px' }}>{(d.shopName||'GOLDSYNC').toUpperCase()}</div>
       </div>
@@ -676,26 +676,8 @@ export default function XRFCertificate() {
 
   const [view,        setView]        = useState('front');
   const [downloading, setDl]          = useState(false);
-  const stageRef   = useRef(null);
-  const sizerRef   = useRef(null);
-  const scalerRef  = useRef(null);
-
-  useEffect(() => {
-    const stage  = stageRef.current;
-    const sizer  = sizerRef.current;
-    const scaler = scalerRef.current;
-    if (!stage || !sizer || !scaler) return;
-    const update = () => {
-      const available = stage.clientWidth - 24; // subtract padding
-      const scale = Math.min(1, available / CARD_W);
-      sizer.style.height = `${CARD_H * scale}px`;
-      scaler.style.transform = `translateX(-50%) scale(${scale})`;
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(stage);
-    return () => ro.disconnect();
-  }, []);
+  const stageRef = useRef(null);
+  const [previewScale, setPreviewScale] = useState(1);
 
   const [shopName,    setShopName]    = useState('');
   const [shopAddress, setShopAddress] = useState('Pathar Pratima');
@@ -713,15 +695,56 @@ export default function XRFCertificate() {
   const [copper, setCopper] = useState('');
   const [others, setOthers] = useState('');
 
-  const [cardGradient,   setCardGradient]   = useState(() => COLOR_PRESETS.slate);
+  const [cardGradient,   setCardGradient]   = useState(() => GRADIENT_PRESETS[0]);
   const [productImage,   setProductImage]   = useState(null);
   const [imageOnBack,    setImageOnBack]    = useState(false);
   const [conditionsText, setConditionsText] = useState(() => DEFAULT_CONDITIONS.join('\n'));
 
   useEffect(() => {
     const karat = parseFloat(productKarat);
-    if (!isNaN(karat) && karat > 0) setGold(String(Math.round((karat / 24) * 100 * 100) / 100));
+    if (isNaN(karat) || karat <= 0) return;
+
+    const k = Math.round(karat);
+    const preset = KARAT_METAL_PRESETS[k];
+    if (preset && Math.abs(karat - k) < 0.001) {
+      setGold(preset.gold);
+      setSilver(preset.silver);
+      setCopper(preset.copper);
+      setOthers(preset.others);
+      return;
+    }
+
+    // Fallback for non-preset values: keep existing behavior for Gold only.
+    setGold(String(Math.round((karat / 24) * 100 * 100) / 100));
   }, [productKarat]);
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+
+    const updateScale = (width) => {
+      // Keep the 700×440 card fully visible on mobile without horizontal scrolling.
+      const stagePadding = 40; // `.xrf-card-stage` padding (20px * 2)
+      const usable = Math.max(0, width - stagePadding);
+      const next = Math.max(0.32, Math.min(1, usable / CARD_W));
+      setPreviewScale(Number(next.toFixed(3)));
+    };
+
+    updateScale(el.getBoundingClientRect().width);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver((entries) => {
+        const w = entries?.[0]?.contentRect?.width;
+        if (typeof w === 'number') updateScale(w);
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+
+    const onResize = () => updateScale(el.getBoundingClientRect().width);
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const d = {
     shopName, shopAddress, shopInfo,
@@ -774,14 +797,6 @@ export default function XRFCertificate() {
           <div className="xrf-page-title">XRF Certificate Generator</div>
           <div className="xrf-page-sub">Offline · PVC Card · Custom Color · QR Code · PNG Export</div>
         </div>
-        <div className="xrf-page-actions">
-          <button className="xrf-btn xrf-btn-ghost xrf-btn-sm" onClick={() => handleDownload('front')} disabled={downloading}>
-            {downloading ? '⌛' : '🖼'} PNG Front
-          </button>
-          <button className="xrf-btn xrf-btn-gold" onClick={() => handleDownload('back')} disabled={downloading}>
-            {downloading ? '⌛ Working…' : '🖼 PNG Back'}
-          </button>
-        </div>
       </div>
 
       <div className="xrf-layout">
@@ -823,27 +838,45 @@ export default function XRFCertificate() {
               <div className="xrf-field"><label className="xrf-label">Silver</label><input className="xrf-input" value={silver} onChange={e=>setSilver(e.target.value)} placeholder="e.g. 1.20" /></div>
               <div className="xrf-field"><label className="xrf-label">Others</label><input className="xrf-input" value={others} onChange={e=>setOthers(e.target.value)} placeholder="e.g. 0.70" /></div>
             </div>
+            {(() => {
+              const total = (parseFloat(gold)||0) + (parseFloat(copper)||0) + (parseFloat(silver)||0) + (parseFloat(others)||0);
+              const exact = Math.abs(total - 100) < 0.01;
+              const hasAny = gold || copper || silver || others;
+              if (!hasAny) return null;
+              return (
+                <div style={{marginTop:'8px', display:'flex', alignItems:'center', gap:'7px', fontSize:'.75rem', fontWeight:600}}>
+                  <span style={{color:'var(--t4,#666)'}}>Total:</span>
+                  <span style={{color: exact ? 'var(--green,#4ade80)' : 'var(--red,#f87171)', fontVariantNumeric:'tabular-nums'}}>
+                    {total.toFixed(2)}%
+                  </span>
+                  {exact
+                    ? <span style={{color:'var(--green,#4ade80)', fontSize:'.68rem', fontWeight:400}}>✓ 100%</span>
+                    : <span style={{color:'var(--red,#f87171)', fontSize:'.68rem', fontWeight:400}}>(should sum to 100%)</span>
+                  }
+                </div>
+              );
+            })()}
           </div>
 
           <div className="xrf-panel">
             <div className="xrf-panel-title">Card Appearance</div>
-            <div className="xrf-label" style={{marginBottom:'8px'}}>Color Theme</div>
+            <div className="xrf-label" style={{marginBottom:'8px'}}>Gradient Theme</div>
             <div className="xrf-color-presets">
-              {Object.entries(COLOR_PRESETS).filter(([k])=>k!=='custom').map(([key, p])=>(
+              {GRADIENT_PRESETS.map(p=>(
                 <div
-                  key={key}
-                  className={`xrf-color-swatch${cardGradient.label===p.label?' sel':''}`}
-                  style={{background:`linear-gradient(135deg, ${p.primary}, ${p.secondary})`}}
-                  title={p.label}
+                  key={p.name}
+                  className={`xrf-color-swatch${cardGradient.name===p.name?' sel':''}`}
+                  style={{background:`linear-gradient(${p.angle}deg, ${p.from}, ${p.to})`}}
+                  title={p.name}
                   onClick={()=>setCardGradient(p)}
                 />
               ))}
             </div>
             <div className="xrf-color-custom-row" style={{gap:'10px',flexWrap:'wrap'}}>
               <label className="xrf-label" style={{marginBottom:0,whiteSpace:'nowrap'}}>Custom from:</label>
-              <input type="color" className="xrf-color-pick" value={cardGradient.primary} onChange={e=>setCardGradient(g=>({...g, label:'Custom Colour', primary:e.target.value}))} />
+              <input type="color" className="xrf-color-pick" value={cardGradient.from} onChange={e=>setCardGradient(g=>({...g, name:'Custom', from:e.target.value}))} />
               <label className="xrf-label" style={{marginBottom:0,whiteSpace:'nowrap'}}>to:</label>
-              <input type="color" className="xrf-color-pick" value={cardGradient.secondary} onChange={e=>setCardGradient(g=>({...g, label:'Custom Colour', secondary:e.target.value}))} />
+              <input type="color" className="xrf-color-pick" value={cardGradient.to} onChange={e=>setCardGradient(g=>({...g, name:'Custom', to:e.target.value}))} />
             </div>
             <div style={{marginTop:'16px'}}>
               <div className="xrf-label">Product Image <span style={{color:'var(--t5,#444)',fontWeight:400}}>(optional)</span></div>
@@ -856,7 +889,7 @@ export default function XRFCertificate() {
                   </>
                 ) : (
                   <>
-                    <div style={{fontSize:'24px',marginBottom:'5px',opacity:.6}}>📷</div>
+                    <Camera size={24} style={{marginBottom:'5px',opacity:.6}} />
                     <div style={{fontSize:'.78rem',color:'var(--t4,#666)'}}>Click to upload product image</div>
                     <div style={{fontSize:'.67rem',color:'var(--t5,#444)',marginTop:'3px'}}>PNG · JPG · WebP · 100% offline</div>
                   </>
@@ -882,19 +915,28 @@ export default function XRFCertificate() {
 
         {/* ── RIGHT: Preview ── */}
         <div className="xrf-preview-col">
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'10px',rowGap:'8px'}}>
+          <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
             <div className="xrf-view-toggle">
-              <button className={`xrf-vbtn ${view==='front'?'on':'off'}`} onClick={()=>setView('front')}>▣ Front Side</button>
-              <button className={`xrf-vbtn ${view==='back'?'on':'off'}`} onClick={()=>setView('back')}>▣ Back Side</button>
+              <button className={`xrf-vbtn ${view==='front'?'on':'off'}`} onClick={()=>setView('front')}><MonitorSmartphone size={14} style={{display:'inline',verticalAlign:'middle',marginRight:'5px'}} />Front Side</button>
+              <button className={`xrf-vbtn ${view==='back'?'on':'off'}`} onClick={()=>setView('back')}><MonitorSmartphone size={14} style={{display:'inline',verticalAlign:'middle',marginRight:'5px'}} />Back Side</button>
             </div>
-            <button className="xrf-btn xrf-btn-gold" onClick={()=>handleDownload(view)} disabled={downloading}>
-              {downloading ? '⌛ Working…' : `🖼 Download PNG ${view==='front'?'Front':'Back'}`}
+            <button className="xrf-btn xrf-btn-ghost xrf-btn-sm" onClick={()=>handleDownload('front')} disabled={downloading}>
+              {downloading ? <Loader2 size={14} className="spin" /> : <Download size={14} />} Download Front Side
+            </button>
+            <button className="xrf-btn xrf-btn-gold xrf-btn-sm" onClick={()=>handleDownload('back')} disabled={downloading}>
+              {downloading ? <Loader2 size={14} className="spin" /> : <Download size={14} />} Download Back Side
             </button>
           </div>
 
           <div className="xrf-card-stage" ref={stageRef}>
-            <div className="xrf-card-sizer" ref={sizerRef}>
-              <div className="xrf-card-scaler" ref={scalerRef}>
+            <div
+              className="xrf-card-fit"
+              style={{
+                width: `${Math.round(CARD_W * previewScale)}px`,
+                height: `${Math.round(CARD_H * previewScale)}px`,
+              }}
+            >
+              <div className="xrf-card-inner" style={{ transform: `scale(${previewScale})` }}>
                 {view === 'front' ? <CardFront d={d} /> : <CardBack d={d} />}
               </div>
             </div>

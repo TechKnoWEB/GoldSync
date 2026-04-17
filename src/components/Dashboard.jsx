@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Users, ClipboardList, Scale, Gem, TrendingUp, TrendingDown, Wallet, CalendarDays, BarChart2, Trophy, CreditCard, Clock, RefreshCw, Coins, Banknote, Handshake, Circle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient.js';
 
 // ─── Inject Dashboard Styles ──────────────────────────────────────────────────
@@ -97,7 +98,7 @@ const injectDashboardStyles = () => {
     }
     .db-page-sub {
       font-size: .78rem; font-weight: 300;
-      color: var(--t4, #6e6250); margin-top: 5px;
+      color: var(--t4, #7c6f59); margin-top: 5px;
     }
     .db-refresh-btn {
       display: inline-flex; align-items: center; gap: 8px;
@@ -157,7 +158,7 @@ const injectDashboardStyles = () => {
     .db-kpi-label {
       font-size: .65rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 1.3px;
-      color: var(--t4, #6e6250); margin-bottom: 6px;
+      color: var(--t4, #7c6f59); margin-bottom: 6px;
     }
     .db-kpi-value {
       font-size: 1.55rem; font-weight: 900;
@@ -227,7 +228,7 @@ const injectDashboardStyles = () => {
     }
     .db-panel-sub {
       font-size: .7rem; font-weight: 300;
-      color: var(--t4, #6e6250); margin-top: 2px;
+      color: var(--t4, #7c6f59); margin-top: 2px;
     }
     .db-panel-badge {
       font-size: .68rem; font-weight: 700;
@@ -315,7 +316,7 @@ const injectDashboardStyles = () => {
       color: var(--t1, #f0e8d8);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .db-tx-date { font-size: .7rem; color: var(--t4, #6e6250); margin-top: 1px; font-weight: 300; }
+    .db-tx-date { font-size: .7rem; color: var(--t4, #7c6f59); margin-top: 1px; font-weight: 300; }
     .db-tx-right { text-align: right; flex-shrink: 0; }
     .db-tx-gold { font-size: .82rem; font-weight: 700; color: var(--gold, #d4af37); font-variant-numeric: tabular-nums; }
     .db-tx-badge {
@@ -348,7 +349,7 @@ const injectDashboardStyles = () => {
     .db-mode-emoji { font-size: 1.4rem; margin-bottom: 7px; display: block; transition: transform .3s; }
     .db-mode-card:hover .db-mode-emoji { transform: scale(1.15); }
     .db-mode-count { font-size: 1.25rem; font-weight: 900; font-variant-numeric: tabular-nums; margin-bottom: 3px; }
-    .db-mode-label { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--t4, #6e6250); }
+    .db-mode-label { font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--t4, #7c6f59); }
     .db-mode-pct {
       font-size: .68rem; font-weight: 600; margin-top: 4px;
       padding: 1px 6px; border-radius: 100px;
@@ -377,7 +378,7 @@ const injectDashboardStyles = () => {
       color: var(--t2, #c4b699);
       vertical-align: middle;
     }
-    .db-sum-table td:first-child { color: var(--t4, #6e6250); font-weight: 500; font-size: .75rem; }
+    .db-sum-table td:first-child { color: var(--t4, #7c6f59); font-weight: 500; font-size: .75rem; }
     .db-sum-table td:last-child { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
 
     /* ── Live pulse ── */
@@ -398,7 +399,7 @@ const injectDashboardStyles = () => {
     /* ── Empty state ── */
     .db-empty {
       text-align: center; padding: 36px 20px;
-      color: var(--t4, #6e6250);
+      color: var(--t4, #7c6f59);
     }
     .db-empty-ico { font-size: 2rem; opacity: .2; margin-bottom: 10px; display: block; }
     .db-empty-text { font-size: .82rem; font-weight: 300; }
@@ -418,7 +419,7 @@ const injectDashboardStyles = () => {
     }
     .db-loader-text {
       font-size: .82rem; font-weight: 300;
-      color: var(--t4, #6e6250);
+      color: var(--t4, #7c6f59);
     }
 
     /* ── Period selector ── */
@@ -439,7 +440,7 @@ const injectDashboardStyles = () => {
       font-family: var(--font, 'Lexend', sans-serif);
       font-size: .74rem;
       font-weight: 600;
-      color: var(--t4, #6e6250);
+      color: var(--t4, #7c6f59);
       cursor: pointer;
       transition: all .2s cubic-bezier(.16,1,.3,1);
       white-space: nowrap;
@@ -825,7 +826,7 @@ export default function Dashboard() {
 
   if (!data) return (
     <div className="db-empty">
-      <span className="db-empty-ico">📊</span>
+      <span className="db-empty-ico"><BarChart2 size={36} /></span>
       <p className="db-empty-text">No data available yet.</p>
     </div>
   );
@@ -844,10 +845,6 @@ export default function Dashboard() {
       {/* ══ Page Header ══ */}
       <div className="db-page-head db-s1">
         <div>
-          <div className="db-page-eyebrow">
-            <span className="db-page-eyebrow-line" />
-            Overview
-          </div>
           <h1 className="db-page-title">Dashboard</h1>
           <p className="db-page-sub">
             {lastFetch.current
@@ -872,7 +869,7 @@ export default function Dashboard() {
             <span className="db-live-dot" /> Live
           </span>
           <button className={`db-refresh-btn${refreshing ? ' loading' : ''}`} onClick={() => load(true)}>
-            <span className="db-refresh-icon">↻</span>
+            <span className="db-refresh-icon"><RefreshCw size={13} /></span>
             {refreshing ? 'Refreshing…' : 'Refresh'}
           </button>
         </div>
@@ -884,7 +881,7 @@ export default function Dashboard() {
         <KpiCard
           label="Active Customers"
           value={kpis.activeCustomers}
-          icon="👤"
+          icon={<Users size={18} />}
           iconBg="rgba(212,175,55,0.1)"
           iconColor="var(--gold, #d4af37)"
           glowColor="radial-gradient(ellipse at top left, rgba(212,175,55,0.06), transparent)"
@@ -895,7 +892,7 @@ export default function Dashboard() {
         <KpiCard
           label="Transactions"
           value={kpis.totalTransactions}
-          icon="📋"
+          icon={<ClipboardList size={18} />}
           iconBg="rgba(96,165,250,0.1)"
           iconColor="var(--blue, #60a5fa)"
           glowColor="radial-gradient(ellipse at top left, rgba(96,165,250,0.05), transparent)"
@@ -907,7 +904,7 @@ export default function Dashboard() {
           label="Gold In"
           value={kpis.totalGoldIn}
           unit="g"
-          icon="⚖️"
+          icon={<Scale size={18} />}
           iconBg="rgba(212,175,55,0.1)"
           iconColor="var(--gold, #d4af37)"
           glowColor="radial-gradient(ellipse at top left, rgba(212,175,55,0.06), transparent)"
@@ -920,7 +917,7 @@ export default function Dashboard() {
           label="Fine Gold"
           value={kpis.totalFine}
           unit="g"
-          icon="💎"
+          icon={<Gem size={18} />}
           iconBg="rgba(74,222,128,0.1)"
           iconColor="var(--green, #4ade80)"
           glowColor="radial-gradient(ellipse at top left, rgba(74,222,128,0.05), transparent)"
@@ -933,7 +930,7 @@ export default function Dashboard() {
           label="Net Balance"
           value={Math.abs(kpis.netBalance)}
           unit="g"
-          icon={kpis.netBalance >= 0 ? '📈' : '📉'}
+          icon={kpis.netBalance >= 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
           iconBg={kpis.netBalance >= 0 ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)'}
           iconColor={kpis.netBalance >= 0 ? 'var(--green, #4ade80)' : 'var(--red, #f87171)'}
           glowColor={kpis.netBalance >= 0
@@ -948,7 +945,7 @@ export default function Dashboard() {
           label="Cash Collected"
           value={kpis.totalCash}
           unit="₹"
-          icon="💰"
+          icon={<Wallet size={18} />}
           iconBg="rgba(251,191,36,0.1)"
           iconColor="var(--orange, #fbbf24)"
           glowColor="radial-gradient(ellipse at top left, rgba(251,191,36,0.05), transparent)"
@@ -966,7 +963,7 @@ export default function Dashboard() {
         <div className="db-panel">
           <div className="db-panel-head">
             <div className="db-panel-title-wrap">
-              <div className="db-panel-ico" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.12)' }}>📅</div>
+              <div className="db-panel-ico" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.12)' }}><CalendarDays size={18} /></div>
               <div>
                 <div className="db-panel-title">Transaction Activity</div>
                 <div className="db-panel-sub">{chartTitle}</div>
@@ -978,7 +975,7 @@ export default function Dashboard() {
           {/* Sparkline bars */}
           {activityBars.every(b => b.count === 0) ? (
             <div className="db-empty">
-              <span className="db-empty-ico">📊</span>
+              <span className="db-empty-ico"><BarChart2 size={36} /></span>
               <p className="db-empty-text">No transactions in this period</p>
             </div>
           ) : (
@@ -1005,7 +1002,7 @@ export default function Dashboard() {
               {/* Axis labels */}
               <div style={{ display: 'flex', gap: '4px' }}>
                 {activityBars.map((b, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '.58rem', color: 'var(--t4, #6e6250)', fontWeight: 600, letterSpacing: '.3px', lineHeight: 1.2 }}>
+                  <div key={i} style={{ flex: 1, textAlign: 'center', fontSize: '.58rem', color: 'var(--t4, #7c6f59)', fontWeight: 600, letterSpacing: '.3px', lineHeight: 1.2 }}>
                     {b.label}
                   </div>
                 ))}
@@ -1013,7 +1010,7 @@ export default function Dashboard() {
 
               {/* Gold weight bars */}
               <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-xs, rgba(212,175,55,.05))' }}>
-                <div style={{ fontSize: '.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--t4, #6e6250)', marginBottom: '10px' }}>
+                <div style={{ fontSize: '.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.2px', color: 'var(--t4, #7c6f59)', marginBottom: '10px' }}>
                   Gold Processed (g) — {range.label}
                 </div>
                 <div className="db-bars">
@@ -1046,7 +1043,7 @@ export default function Dashboard() {
         <div className="db-panel">
           <div className="db-panel-head">
             <div className="db-panel-title-wrap">
-              <div className="db-panel-ico" style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.14)' }}>📊</div>
+              <div className="db-panel-ico" style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.14)' }}><BarChart2 size={18} /></div>
               <div>
                 <div className="db-panel-title">Gold Summary</div>
                 <div className="db-panel-sub">{range.shortLabel}</div>
@@ -1081,7 +1078,7 @@ export default function Dashboard() {
         <div className="db-panel">
           <div className="db-panel-head">
             <div className="db-panel-title-wrap">
-              <div className="db-panel-ico" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.12)' }}>🏆</div>
+              <div className="db-panel-ico" style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.12)' }}><Trophy size={18} /></div>
               <div>
                 <div className="db-panel-title">Top Customers</div>
                 <div className="db-panel-sub">By gold processed · {range.label}</div>
@@ -1091,7 +1088,7 @@ export default function Dashboard() {
           </div>
           {topCustomers.length === 0 ? (
             <div className="db-empty">
-              <span className="db-empty-ico">👤</span>
+              <span className="db-empty-ico"><Users size={36} /></span>
               <p className="db-empty-text">No activity in this period</p>
             </div>
           ) : (
@@ -1109,7 +1106,7 @@ export default function Dashboard() {
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="db-bar-name">{c.name}</span>
-                      <span style={{ fontSize: '.65rem', color: 'var(--t4, #6e6250)', flexShrink: 0 }}>
+                      <span style={{ fontSize: '.65rem', color: 'var(--t4, #7c6f59)', flexShrink: 0 }}>
                         {c.txns} txn{c.txns !== 1 ? 's' : ''}
                       </span>
                     </div>
@@ -1140,7 +1137,7 @@ export default function Dashboard() {
         <div className="db-panel">
           <div className="db-panel-head">
             <div className="db-panel-title-wrap">
-              <div className="db-panel-ico" style={{ background: 'rgba(192,132,252,0.08)', border: '1px solid rgba(192,132,252,0.15)' }}>💳</div>
+              <div className="db-panel-ico" style={{ background: 'rgba(192,132,252,0.08)', border: '1px solid rgba(192,132,252,0.15)' }}><CreditCard size={18} /></div>
               <div>
                 <div className="db-panel-title">Payment Modes</div>
                 <div className="db-panel-sub">How customers settled · {range.label}</div>
@@ -1154,7 +1151,7 @@ export default function Dashboard() {
                   <DonutRing segments={donutSegs} size={150} stroke={20} />
                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                     <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--gold, #d4af37)', fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }}>{total}</div>
-                    <div style={{ fontSize: '.6rem', fontWeight: 600, color: 'var(--t4, #6e6250)', textTransform: 'uppercase', letterSpacing: '1px' }}>txns</div>
+                    <div style={{ fontSize: '.6rem', fontWeight: 600, color: 'var(--t4, #7c6f59)', textTransform: 'uppercase', letterSpacing: '1px' }}>txns</div>
                   </div>
                 </div>
                 <div className="db-ring-legend">
@@ -1173,13 +1170,13 @@ export default function Dashboard() {
               </div>
               <div className="db-mode-grid">
                 {[
-                  { key: 'gold', emoji: '🪙', label: 'Gold', color: '#fbbf24' },
-                  { key: 'cash', emoji: '💵', label: 'Cash', color: '#60a5fa' },
-                  { key: 'both', emoji: '🤝', label: 'Both', color: '#c084fc' },
-                  { key: 'none', emoji: '⚪', label: 'None', color: '#6b6358' },
-                ].map(({ key, emoji, label, color }) => (
+                  { key: 'gold', icon: <Coins size={18} />, label: 'Gold', color: '#fbbf24' },
+                  { key: 'cash', icon: <Banknote size={18} />, label: 'Cash', color: '#60a5fa' },
+                  { key: 'both', icon: <Handshake size={18} />, label: 'Both', color: '#c084fc' },
+                  { key: 'none', icon: <Circle size={18} />, label: 'None', color: '#6b6358' },
+                ].map(({ key, icon, label, color }) => (
                   <div className="db-mode-card" key={key}>
-                    <span className="db-mode-emoji">{emoji}</span>
+                    <span className="db-mode-emoji">{icon}</span>
                     <div className="db-mode-count" style={{ color }}>{payModes[key]}</div>
                     <div className="db-mode-label">{label}</div>
                     <div className="db-mode-pct">{total > 0 ? ((payModes[key] / total) * 100).toFixed(0) : 0}%</div>
@@ -1189,7 +1186,7 @@ export default function Dashboard() {
             </>
           ) : (
             <div className="db-empty">
-              <span className="db-empty-ico">💳</span>
+              <span className="db-empty-ico"><CreditCard size={36} /></span>
               <p className="db-empty-text">No transactions in this period</p>
             </div>
           )}
@@ -1200,7 +1197,7 @@ export default function Dashboard() {
       <div className="db-panel db-s5">
         <div className="db-panel-head">
           <div className="db-panel-title-wrap">
-            <div className="db-panel-ico" style={{ background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.14)' }}>🕐</div>
+            <div className="db-panel-ico" style={{ background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.14)' }}><Clock size={18} /></div>
             <div>
               <div className="db-panel-title">Recent Transactions</div>
               <div className="db-panel-sub">Latest {Math.min(recent.length, 10)} records · {range.label}</div>
@@ -1211,7 +1208,7 @@ export default function Dashboard() {
 
         {recent.length === 0 ? (
           <div className="db-empty">
-            <span className="db-empty-ico">📋</span>
+            <span className="db-empty-ico"><ClipboardList size={36} /></span>
             <p className="db-empty-text">No transactions in this period</p>
           </div>
         ) : (
@@ -1223,7 +1220,7 @@ export default function Dashboard() {
               gap: '8px', padding: '6px 10px',
               fontSize: '.62rem', fontWeight: 700,
               textTransform: 'uppercase', letterSpacing: '1px',
-              color: 'var(--t5, #3a3428)',
+              color: 'var(--t5, #5f5444)',
               borderBottom: '1px solid var(--border-xs, rgba(212,175,55,.05))',
               marginBottom: '4px',
             }}>
@@ -1267,7 +1264,7 @@ export default function Dashboard() {
                     {fmtG(tx.fine_gold)}g
                   </div>
                   <div style={{ textAlign: 'right', fontSize: '.8rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums', alignSelf: 'center',
-                    color: balDir === 'pos' ? 'var(--green, #4ade80)' : balDir === 'neg' ? 'var(--red, #f87171)' : 'var(--t4, #6e6250)' }}>
+                    color: balDir === 'pos' ? 'var(--green, #4ade80)' : balDir === 'neg' ? 'var(--red, #f87171)' : 'var(--t4, #7c6f59)' }}>
                     {fmtG(tx.balance)}g
                   </div>
                   <div style={{ textAlign: 'right', fontSize: '.8rem', fontWeight: 600, color: 'var(--orange, #fbbf24)', fontVariantNumeric: 'tabular-nums', alignSelf: 'center' }}>
@@ -1278,7 +1275,7 @@ export default function Dashboard() {
                       fontSize: '.62rem', fontWeight: 700, textTransform: 'uppercase',
                       padding: '2px 7px', borderRadius: '100px', letterSpacing: '.3px',
                       background: tx.payment_mode === 'gold' ? 'rgba(251,191,36,.1)' : tx.payment_mode === 'cash' ? 'rgba(96,165,250,.1)' : tx.payment_mode === 'both' ? 'rgba(192,132,252,.1)' : 'rgba(255,255,255,.03)',
-                      color: tx.payment_mode === 'gold' ? 'var(--orange, #fbbf24)' : tx.payment_mode === 'cash' ? 'var(--blue, #60a5fa)' : tx.payment_mode === 'both' ? '#c084fc' : 'var(--t5, #3a3428)',
+                      color: tx.payment_mode === 'gold' ? 'var(--orange, #fbbf24)' : tx.payment_mode === 'cash' ? 'var(--blue, #60a5fa)' : tx.payment_mode === 'both' ? '#c084fc' : 'var(--t5, #5f5444)',
                     }}>
                       {tx.payment_mode || '—'}
                     </span>

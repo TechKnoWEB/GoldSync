@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { AlertTriangle, Trash2, Users, Upload, Download, User, Smartphone, Search, X, FileText, FolderOpen, Folder, BarChart2, CheckCircle, Loader2, CalendarDays } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabaseClient.js';
 
@@ -169,95 +170,6 @@ const injectCustomerKeyframes = () => {
 // Styles
 // ============================================
 const S = {
-  // ── Card header ──
-  cardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '20px',
-    paddingBottom: '14px',
-    borderBottom: '1px solid rgba(212,175,55,0.08)',
-    flexWrap: 'wrap',
-    gap: '10px',
-  },
-  cardHeaderLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    minWidth: 0,
-  },
-  cardIcon: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '10px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1rem',
-    flexShrink: 0,
-  },
-  cardTitleGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-  },
-  cardTitleText: {
-    fontSize: '1.05rem',
-    fontWeight: 700,
-    background: 'linear-gradient(135deg, #d4af37 0%, #f0dea0 50%, #d4af37 100%)',
-    backgroundSize: '200% auto',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
-    letterSpacing: '-0.01em',
-    lineHeight: 1.3,
-  },
-  cardSubtitle: {
-    fontSize: '0.68rem',
-    color: 'var(--text-dim)',
-    fontWeight: 400,
-    marginTop: '2px',
-    lineHeight: 1.4,
-  },
-
-  // ── Compact stats row ──
-  statsRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '8px',
-    marginBottom: '16px',
-  },
-  statCard: {
-    background: 'linear-gradient(135deg, rgba(212,175,55,0.03) 0%, rgba(212,175,55,0.01) 100%)',
-    border: '1px solid rgba(212,175,55,0.08)',
-    borderRadius: '10px',
-    padding: '10px 8px',
-    textAlign: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  statLabel: {
-    fontSize: '0.55rem',
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-    color: 'var(--text-dim)',
-    marginBottom: '3px',
-    lineHeight: 1.2,
-  },
-  statValue: {
-    fontSize: '0.95rem',
-    fontWeight: 800,
-    fontVariantNumeric: 'tabular-nums',
-    lineHeight: 1.3,
-  },
-  statIcon: {
-    fontSize: '0.75rem',
-    display: 'block',
-    marginBottom: '2px',
-    opacity: 0.6,
-  },
-
   // ── Section label ──
   sectionLabel: {
     display: 'flex',
@@ -551,22 +463,6 @@ const S = {
     fontFamily: 'inherit',
   },
 
-  // ── Collapse toggle ──
-  collapseToggle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px 0',
-    borderBottom: '1px solid rgba(212,175,55,0.08)',
-    marginBottom: '14px',
-    userSelect: 'none',
-  },
-  collapseArrow: {
-    fontSize: '0.7rem',
-    transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-    color: 'var(--text-dim)',
-  },
-
   // ── Delete section ──
   deleteCard: {
     background: 'linear-gradient(135deg, rgba(248,113,113,0.03) 0%, rgba(248,113,113,0.01) 100%)',
@@ -648,7 +544,7 @@ const S = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0,0,0,0.6)',
+    background: 'var(--bg-overlay)',
     backdropFilter: 'blur(6px)',
     WebkitBackdropFilter: 'blur(6px)',
     display: 'flex',
@@ -658,7 +554,7 @@ const S = {
     padding: '20px',
   },
   confirmCard: {
-    background: 'var(--card-bg, #1a1a2e)',
+    background: 'var(--bg-card)',
     border: '1px solid rgba(248,113,113,0.2)',
     borderRadius: '18px',
     padding: '28px 24px',
@@ -667,6 +563,23 @@ const S = {
     textAlign: 'center',
     boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
     animation: 'warningPulse 2s ease infinite',
+  },
+  popupCard: {
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-md)',
+    borderRadius: '18px',
+    padding: '24px',
+    maxWidth: '480px',
+    width: '100%',
+    boxShadow: 'var(--shadow-xl)',
+  },
+  popupHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '18px',
+    paddingBottom: '12px',
+    borderBottom: '1px solid var(--border-xs)',
   },
   confirmIcon: {
     fontSize: '2.5rem',
@@ -738,26 +651,6 @@ const S = {
     gap: '4px',
   },
 
-  // ── Live indicator ──
-  liveTag: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '5px',
-    fontSize: '0.62rem',
-    fontWeight: 600,
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase',
-    padding: '3px 10px',
-    borderRadius: '100px',
-    backdropFilter: 'blur(8px)',
-  },
-  liveDot: {
-    width: '5px',
-    height: '5px',
-    borderRadius: '50%',
-    animation: 'pulse 2s ease-in-out infinite',
-    flexShrink: 0,
-  },
 };
 
 function CustomerForm({ customers, onCustomerAdded }) {
@@ -1031,7 +924,7 @@ function CustomerForm({ customers, onCustomerAdded }) {
       {confirmDelete && (
         <div style={S.confirmOverlay} className="confirm-overlay" onClick={() => !deleting && setConfirmDelete(null)}>
           <div style={S.confirmCard} className="cust-scale-in" onClick={(e) => e.stopPropagation()}>
-            <span style={S.confirmIcon}>⚠️</span>
+            <span style={S.confirmIcon}><AlertTriangle size={28} /></span>
             <div style={S.confirmTitle}>Confirm Deletion</div>
             <div style={S.confirmDesc}>
               This will permanently delete customers {deleteModeLabels[deleteMode].toLowerCase()}{' '}
@@ -1045,15 +938,9 @@ function CustomerForm({ customers, onCustomerAdded }) {
               </div>
             )}
             <div style={S.confirmBtnRow}>
-              <button style={S.confirmCancelBtn} onClick={() => setConfirmDelete(null)} disabled={deleting}>
-                Cancel
-              </button>
+              <button style={S.confirmCancelBtn} onClick={() => setConfirmDelete(null)} disabled={deleting}>Cancel</button>
               <button style={S.confirmDeleteBtn} className="delete-btn-danger" onClick={executeDeleteByDate} disabled={deleting}>
-                {deleting ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span> Deleting...</>
-                ) : (
-                  <>🗑️ Delete {confirmDelete.count}</>
-                )}
+                {deleting ? <><Loader2 size={14} style={{ display:'inline-block', animation:'spin 1s linear infinite' }} /> Deleting...</> : <><Trash2 size={14} /> Delete {confirmDelete.count}</>}
               </button>
             </div>
           </div>
@@ -1064,206 +951,162 @@ function CustomerForm({ customers, onCustomerAdded }) {
       {deleteSingleConfirm && (
         <div style={S.confirmOverlay} className="confirm-overlay" onClick={() => !deleting && setDeleteSingleConfirm(null)}>
           <div style={S.confirmCard} className="cust-scale-in" onClick={(e) => e.stopPropagation()}>
-            <span style={S.confirmIcon}>🗑️</span>
+            <span style={S.confirmIcon}><Trash2 size={28} /></span>
             <div style={S.confirmTitle}>Delete Customer?</div>
             <div style={S.confirmDesc}>
-              Are you sure you want to delete <strong>{deleteSingleConfirm.name}</strong> ({deleteSingleConfirm.mobile})?
-              This cannot be undone.
+              Are you sure you want to delete <strong>{deleteSingleConfirm.name}</strong> ({deleteSingleConfirm.mobile})? This cannot be undone.
             </div>
             <div style={S.confirmBtnRow}>
-              <button style={S.confirmCancelBtn} onClick={() => setDeleteSingleConfirm(null)} disabled={deleting}>
-                Cancel
-              </button>
+              <button style={S.confirmCancelBtn} onClick={() => setDeleteSingleConfirm(null)} disabled={deleting}>Cancel</button>
               <button style={S.confirmDeleteBtn} className="delete-btn-danger" onClick={handleDeleteSingle} disabled={deleting}>
-                {deleting ? (
-                  <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span> Deleting...</>
-                ) : (
-                  <>🗑️ Delete</>
-                )}
+                {deleting ? <><Loader2 size={14} style={{ display:'inline-block', animation:'spin 1s linear infinite' }} /> Deleting...</> : <><Trash2 size={14} /> Delete</>}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════
-          Compact Stats Bar
-          ═══════════════════════════════════ */}
-      <div style={S.statsRow} className="cust-stats-grid">
-        <div style={S.statCard} className="cust-stat-hover cust-fade-in">
-          <div style={S.statIcon}>👥</div>
-          <div style={S.statLabel}>Customers</div>
-          <div style={{ ...S.statValue, color: 'var(--gold, #d4af37)' }}>{customers.length}</div>
-        </div>
-        <div style={{ ...S.statCard, cursor: 'pointer' }} className="cust-stat-hover cust-fade-in"
-          onClick={() => { setShowUpload(!showUpload); setShowDownload(false); setShowDelete(false); }}>
-          <div style={S.statIcon}>📤</div>
-          <div style={S.statLabel}>Upload</div>
-          <div style={{ ...S.statValue, color: 'var(--green, #22d399)', fontSize: '0.85rem' }}>CSV</div>
-        </div>
-        <div style={{ ...S.statCard, cursor: 'pointer' }} className="cust-stat-hover cust-fade-in"
-          onClick={() => { setShowDownload(!showDownload); setShowUpload(false); setShowDelete(false); }}>
-          <div style={S.statIcon}>📥</div>
-          <div style={S.statLabel}>Download</div>
-          <div style={{ ...S.statValue, color: 'var(--blue, #60a5fa)', fontSize: '0.85rem' }}>Export</div>
-        </div>
-        <div style={{ ...S.statCard, borderColor: 'rgba(248,113,113,0.1)', cursor: 'pointer' }}
-          className="cust-stat-hover cust-fade-in"
-          onClick={() => { setShowDelete(!showDelete); setShowUpload(false); setShowDownload(false); }}>
-          <div style={S.statIcon}>🗑️</div>
-          <div style={S.statLabel}>Delete</div>
-          <div style={{ ...S.statValue, color: 'var(--red, #f87171)', fontSize: '0.85rem' }}>By Date</div>
-        </div>
-      </div>
-
-      {/* ═══════════════════════════════════
-          Bulk Upload Section
-          ═══════════════════════════════════ */}
+      {/* ── Popup Modal: Bulk Upload ── */}
       {showUpload && (
-        <div className="card cust-slide-down">
-          <div style={S.cardHeader}>
-            <div style={S.cardHeaderLeft}>
-              <div style={{ ...S.cardIcon, background: 'rgba(34,211,153,0.08)', border: '1px solid rgba(34,211,153,0.12)' }}>📤</div>
-              <div style={S.cardTitleGroup}>
-                <span style={S.cardTitleText}>Bulk Upload</span>
-                <span style={S.cardSubtitle}>Import customers from CSV</span>
+        <div style={S.confirmOverlay} className="confirm-overlay" onClick={() => { setShowUpload(false); setUploadFile(null); setUploadResults(null); }}>
+          <div style={S.popupCard} className="cust-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div style={S.popupHeader}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                <Upload size={15} style={{ color:'var(--green,#4ade80)' }} />
+                <span style={{ fontSize:'0.82rem', fontWeight:700, color:'var(--green,#4ade80)' }}>Bulk Upload</span>
+                <span style={{ fontSize:'0.68rem', color:'var(--t4)' }}>— import from CSV</span>
               </div>
+              <button style={S.smallBtn} onClick={() => { setShowUpload(false); setUploadFile(null); setUploadResults(null); }}><X size={12} /> Close</button>
             </div>
-            <button style={S.smallBtn} onClick={() => { setShowUpload(false); setUploadFile(null); setUploadResults(null); }}>✕ Close</button>
-          </div>
 
-          <div style={{ ...S.uploadZone, ...(isDragActive ? { borderColor: 'rgba(34,211,153,0.4)', background: 'rgba(34,211,153,0.06)' } : {}) }}
-            className="upload-zone-hover"
-            onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}>
-            <input ref={fileInputRef} type="file" accept=".csv" style={{ display: 'none' }}
-              onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} />
-            <span style={S.uploadIcon}>{isDragActive ? '📂' : '📁'}</span>
-            <div style={S.uploadTitle}>{isDragActive ? 'Drop here!' : 'Drag & drop CSV'}</div>
-            <div style={S.uploadDesc}>Or click to browse. Max 5MB.</div>
-            <div style={S.uploadHint}>Columns: <strong>name</strong>, <strong>mobile</strong></div>
-          </div>
+            <div style={{ ...S.uploadZone, ...(isDragActive ? { borderColor:'rgba(34,211,153,0.4)', background:'rgba(34,211,153,0.06)' } : {}) }}
+              className="upload-zone-hover"
+              onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}>
+              <input ref={fileInputRef} type="file" accept=".csv" style={{ display:'none' }}
+                onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} />
+              <span style={S.uploadIcon}>{isDragActive ? <FolderOpen size={32} /> : <Folder size={32} />}</span>
+              <div style={S.uploadTitle}>{isDragActive ? 'Drop here!' : 'Drag & drop CSV'}</div>
+              <div style={S.uploadDesc}>Or click to browse · Max 5MB</div>
+              <div style={S.uploadHint}>Columns: <strong>name</strong>, <strong>mobile</strong></div>
+            </div>
 
-          <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
-            <span style={S.templateLink} onClick={downloadTemplate} role="button" tabIndex={0}>📄 Download Template</span>
-            <span style={{ fontSize: '0.64rem', color: 'var(--text-muted)' }}>Max 500 rows</span>
-          </div>
+            <div style={{ marginTop:'10px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:'6px' }}>
+              <span style={{ ...S.templateLink, display:'inline-flex', alignItems:'center', gap:'5px' }} onClick={downloadTemplate} role="button" tabIndex={0}><FileText size={13} /> Download Template</span>
+              <span style={{ fontSize:'0.64rem', color:'var(--t5)' }}>Max 500 rows</span>
+            </div>
 
-          {uploadFile && (
-            <div style={S.fileInfoCard} className="cust-scale-in">
-              <div style={S.fileIcon}>📄</div>
-              <div style={S.fileDetails}>
-                <div style={S.fileName}>{uploadFile.name}</div>
-                <div style={S.fileMeta}>{(uploadFile.size / 1024).toFixed(1)} KB</div>
+            {uploadFile && (
+              <div style={S.fileInfoCard} className="cust-scale-in">
+                <div style={S.fileIcon}><FileText size={20} /></div>
+                <div style={S.fileDetails}>
+                  <div style={S.fileName}>{uploadFile.name}</div>
+                  <div style={S.fileMeta}>{(uploadFile.size / 1024).toFixed(1)} KB</div>
+                </div>
+                <button style={S.smallBtn} className="clear-btn-hover"
+                  onClick={(e) => { e.stopPropagation(); setUploadFile(null); setUploadResults(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
+                  <X size={12} /> Remove
+                </button>
               </div>
-              <button style={S.smallBtn} className="clear-btn-hover"
-                onClick={(e) => { e.stopPropagation(); setUploadFile(null); setUploadResults(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
-                ✕ Remove
+            )}
+
+            {uploading && (
+              <div style={S.progressWrap} className="cust-fade-in">
+                <div style={S.progressHeader}>
+                  <span style={S.progressLabel}>Uploading...</span>
+                  <span style={S.progressPercent}>{uploadProgress}%</span>
+                </div>
+                <div style={S.progressTrack}>
+                  <div style={{ ...S.progressFill, width:`${uploadProgress}%`,
+                    background: uploadProgress === 100 ? 'linear-gradient(90deg,var(--green),#34d7a0)' : 'linear-gradient(90deg,var(--gold-dk),var(--gold))' }} />
+                </div>
+              </div>
+            )}
+
+            {uploadResults && (
+              <div style={{ ...S.uploadResults,
+                borderColor: uploadResults.errors > 0 ? 'rgba(248,113,113,0.15)' : 'rgba(34,211,153,0.15)',
+                background: uploadResults.errors > 0 ? 'rgba(248,113,113,0.03)' : 'rgba(34,211,153,0.03)' }} className="cust-scale-in">
+                <div style={{ ...S.sectionLabel, marginTop:0 }}><span>Summary</span><div style={S.sectionLine} /></div>
+                <div style={S.resultItem}><BarChart2 size={13} /><span>Total: <strong>{uploadResults.total}</strong></span></div>
+                <div style={S.resultItem}><CheckCircle size={13} style={{ color:'var(--green)' }} /><span style={{ color:'var(--green)' }}>Added: <strong>{uploadResults.success}</strong></span></div>
+                {uploadResults.skipped > 0 && <div style={S.resultItem}><span style={{ color:'var(--orange)' }}>Skipped: <strong>{uploadResults.skipped}</strong></span></div>}
+                {uploadResults.errors > 0 && (
+                  <>
+                    <div style={S.resultItem}><AlertTriangle size={13} style={{ color:'var(--red)' }} /><span style={{ color:'var(--red)' }}>Errors: <strong>{uploadResults.errors}</strong></span></div>
+                    {uploadResults.errorDetails.length > 0 && (
+                      <div style={{ marginTop:'8px', padding:'8px 10px', background:'rgba(248,113,113,0.04)', borderRadius:'6px', fontSize:'0.68rem', color:'var(--t4)', maxHeight:'100px', overflowY:'auto' }}>
+                        {uploadResults.errorDetails.map((err, i) => <div key={i}>• {err}</div>)}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            <div style={{ marginTop:'14px', textAlign:'center' }}>
+              <button type="button" className="btn btn-save cust-save-btn" disabled={!uploadFile || uploading} onClick={handleBulkUpload}>
+                {uploading ? <><Loader2 size={14} style={{ display:'inline-block', animation:'spin 1s linear infinite' }} /> Uploading...</> : <><Upload size={14} /> Upload CSV</>}
               </button>
             </div>
-          )}
-
-          {uploading && (
-            <div style={S.progressWrap} className="cust-fade-in">
-              <div style={S.progressHeader}>
-                <span style={S.progressLabel}>Uploading...</span>
-                <span style={S.progressPercent}>{uploadProgress}%</span>
-              </div>
-              <div style={S.progressTrack}>
-                <div style={{ ...S.progressFill, width: `${uploadProgress}%`,
-                  background: uploadProgress === 100 ? 'linear-gradient(90deg, var(--green), #34d7a0)' : 'linear-gradient(90deg, var(--gold-dark, #b8860b), var(--gold))' }} />
-              </div>
-            </div>
-          )}
-
-          {uploadResults && (
-            <div style={{ ...S.uploadResults,
-              borderColor: uploadResults.errors > 0 ? 'rgba(248,113,113,0.15)' : 'rgba(34,211,153,0.15)',
-              background: uploadResults.errors > 0 ? 'rgba(248,113,113,0.03)' : 'rgba(34,211,153,0.03)' }} className="cust-scale-in">
-              <div style={{ ...S.sectionLabel, marginTop: 0 }}><span>Summary</span><div style={S.sectionLine} /></div>
-              <div style={S.resultItem}><span>📊</span><span>Total: <strong>{uploadResults.total}</strong></span></div>
-              <div style={S.resultItem}><span>✅</span><span style={{ color: 'var(--green)' }}>Added: <strong>{uploadResults.success}</strong></span></div>
-              {uploadResults.skipped > 0 && <div style={S.resultItem}><span>⏭️</span><span style={{ color: 'var(--orange)' }}>Skipped: <strong>{uploadResults.skipped}</strong></span></div>}
-              {uploadResults.errors > 0 && (
-                <>
-                  <div style={S.resultItem}><span>❌</span><span style={{ color: 'var(--red)' }}>Errors: <strong>{uploadResults.errors}</strong></span></div>
-                  {uploadResults.errorDetails.length > 0 && (
-                    <div style={{ marginTop: '8px', padding: '8px 10px', background: 'rgba(248,113,113,0.04)', borderRadius: '6px', fontSize: '0.68rem', color: 'var(--text-dim)', maxHeight: '100px', overflowY: 'auto' }}>
-                      {uploadResults.errorDetails.map((err, i) => <div key={i}>• {err}</div>)}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          <div style={{ marginTop: '14px', textAlign: 'center' }}>
-            <button type="button" className="btn btn-primary cust-save-btn" disabled={!uploadFile || uploading} onClick={handleBulkUpload}>
-              {uploading ? <><span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⏳</span> Uploading...</> : <>📤 Upload</>}
-            </button>
           </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════
-          Download Section
-          ═══════════════════════════════════ */}
+      {/* ── Popup Modal: Download ── */}
       {showDownload && (
-        <div className="card cust-slide-down">
-          <div style={S.cardHeader}>
-            <div style={S.cardHeaderLeft}>
-              <div style={{ ...S.cardIcon, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.12)' }}>📥</div>
-              <div style={S.cardTitleGroup}>
-                <span style={S.cardTitleText}>Download Data</span>
-                <span style={S.cardSubtitle}>Export {customers.length} customer{customers.length !== 1 ? 's' : ''}</span>
+        <div style={S.confirmOverlay} className="confirm-overlay" onClick={() => setShowDownload(false)}>
+          <div style={S.popupCard} className="cust-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div style={S.popupHeader}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                <Download size={15} style={{ color:'var(--blue,#60a5fa)' }} />
+                <span style={{ fontSize:'0.82rem', fontWeight:700, color:'var(--blue,#60a5fa)' }}>Export Data</span>
+                <span style={{ fontSize:'0.68rem', color:'var(--t4)' }}>— {customers.length} customer{customers.length !== 1 ? 's' : ''}</span>
+              </div>
+              <button style={S.smallBtn} onClick={() => setShowDownload(false)}><X size={12} /> Close</button>
+            </div>
+            <div style={S.downloadGrid} className="download-grid">
+              <div style={{ ...S.downloadOption, borderColor:'rgba(34,211,153,0.12)', opacity: downloading ? 0.5 : 1, pointerEvents: downloading ? 'none' : 'auto' }}
+                className="download-option" onClick={() => downloadCustomerData('csv')} role="button" tabIndex={0}>
+                <span style={S.downloadIcon}><BarChart2 size={24} /></span>
+                <div style={{ ...S.downloadTitle, color:'var(--green)' }}>{downloading ? 'Downloading...' : 'CSV'}</div>
+                <div style={S.downloadDesc}>Excel &amp; Google Sheets compatible</div>
+              </div>
+              <div style={{ ...S.downloadOption, borderColor:'rgba(96,165,250,0.12)', opacity: downloading ? 0.5 : 1, pointerEvents: downloading ? 'none' : 'auto' }}
+                className="download-option" onClick={() => downloadCustomerData('json')} role="button" tabIndex={0}>
+                <span style={S.downloadIcon}><FileText size={24} /></span>
+                <div style={{ ...S.downloadTitle, color:'var(--blue)' }}>{downloading ? 'Downloading...' : 'JSON'}</div>
+                <div style={S.downloadDesc}>Structured data for developers</div>
               </div>
             </div>
-            <button style={S.smallBtn} onClick={() => setShowDownload(false)}>✕ Close</button>
-          </div>
-          <div style={S.downloadGrid} className="download-grid">
-            <div style={{ ...S.downloadOption, borderColor: 'rgba(34,211,153,0.12)', opacity: downloading ? 0.5 : 1, pointerEvents: downloading ? 'none' : 'auto' }}
-              className="download-option" onClick={() => downloadCustomerData('csv')} role="button" tabIndex={0}>
-              <span style={S.downloadIcon}>📊</span>
-              <div style={{ ...S.downloadTitle, color: 'var(--green)' }}>{downloading ? 'Downloading...' : 'CSV'}</div>
-              <div style={S.downloadDesc}>Excel & Google Sheets compatible</div>
+            <div style={{ marginTop:'10px', fontSize:'0.68rem', color:'var(--t4)', textAlign:'center' }}>
+              Includes: Name · Mobile · Date Added
             </div>
-            <div style={{ ...S.downloadOption, borderColor: 'rgba(96,165,250,0.12)', opacity: downloading ? 0.5 : 1, pointerEvents: downloading ? 'none' : 'auto' }}
-              className="download-option" onClick={() => downloadCustomerData('json')} role="button" tabIndex={0}>
-              <span style={S.downloadIcon}>📋</span>
-              <div style={{ ...S.downloadTitle, color: 'var(--blue)' }}>{downloading ? 'Downloading...' : 'JSON'}</div>
-              <div style={S.downloadDesc}>Structured data for developers</div>
-            </div>
-          </div>
-          <div style={{ marginTop: '10px', fontSize: '0.68rem', color: 'var(--text-dim)', textAlign: 'center' }}>
-            💡 Includes: Name, Mobile, Date Added
           </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════
-          Delete by Date Section
-          ═══════════════════════════════════ */}
+      {/* ── Popup Modal: Delete by Date ── */}
       {showDelete && (
-        <div className="card cust-slide-down">
-          <div style={S.deleteCard}>
-            <div style={S.deleteHeader}>
-              <div style={S.deleteIcon}>🗑️</div>
-              <div>
-                <div style={S.deleteTitle}>Delete Customers by Date</div>
-                <div style={S.deleteSubtitle}>Remove customers based on when they were added</div>
+        <div style={S.confirmOverlay} className="confirm-overlay" onClick={() => setShowDelete(false)}>
+          <div style={S.popupCard} className="cust-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div style={S.popupHeader}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                <Trash2 size={15} style={{ color:'var(--red,#f87171)' }} />
+                <span style={{ fontSize:'0.82rem', fontWeight:700, color:'var(--red,#f87171)' }}>Delete by Date</span>
+                <span style={{ fontSize:'0.68rem', color:'var(--t4)' }}>— remove by join date</span>
               </div>
+              <button style={S.smallBtn} onClick={() => setShowDelete(false)}><X size={12} /> Close</button>
             </div>
 
-            {/* Mode selector */}
-            <div style={{ ...S.sectionLabel }}><span>Delete Mode</span><div style={S.sectionLine} /></div>
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <div style={{ display:'flex', gap:'6px', marginBottom:'14px', flexWrap:'wrap' }}>
               {['before', 'after', 'on'].map((mode) => (
                 <button key={mode}
                   style={{
                     ...S.smallBtn,
                     background: deleteMode === mode ? 'rgba(248,113,113,0.1)' : 'none',
                     borderColor: deleteMode === mode ? 'rgba(248,113,113,0.25)' : 'rgba(255,255,255,0.08)',
-                    color: deleteMode === mode ? 'var(--red, #f87171)' : 'var(--text-muted)',
+                    color: deleteMode === mode ? 'var(--red,#f87171)' : 'var(--t4)',
                     fontWeight: deleteMode === mode ? 700 : 500,
                   }}
                   onClick={() => setDeleteMode(mode)}>
@@ -1274,48 +1117,29 @@ function CustomerForm({ customers, onCustomerAdded }) {
               ))}
             </div>
 
-            {/* Date picker + Delete button */}
             <div style={S.deleteControlsRow} className="delete-controls-row">
               <div style={S.deleteDateInput}>
-                <label className="form-label" style={{ fontSize: '0.7rem', marginBottom: '6px', display: 'block' }}>
-                  Select Date
-                </label>
+                <label className="form-label" style={{ fontSize:'0.7rem', marginBottom:'6px', display:'block' }}>Select Date</label>
                 <div style={S.inputWrap}>
-                  <span style={S.inputIcon}>📅</span>
-                  <input
-                    type="date"
-                    className="form-input"
-                    style={{ ...S.inputPadded, colorScheme: 'dark' }}
-                    value={deleteDate}
-                    onChange={(e) => setDeleteDate(e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
-                  />
+                  <span style={S.inputIcon}><CalendarDays size={14} /></span>
+                  <input type="date" className="form-input" style={{ ...S.inputPadded, colorScheme:'dark' }}
+                    value={deleteDate} onChange={(e) => setDeleteDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]} />
                 </div>
               </div>
-              <button
-                style={{ ...S.deleteBtn, opacity: !deleteDate ? 0.5 : 1 }}
-                className="delete-btn-danger"
-                disabled={!deleteDate}
-                onClick={handleDeleteByDate}>
-                🗑️ Find & Delete
+              <button style={{ ...S.deleteBtn, opacity: !deleteDate ? 0.5 : 1 }} className="delete-btn-danger" disabled={!deleteDate} onClick={handleDeleteByDate}>
+                <Trash2 size={14} /> Find &amp; Delete
               </button>
             </div>
 
-            {/* Preview of affected customers */}
             {deleteDate && (
               <div style={S.deletePreview} className="cust-fade-in">
-                <span style={{ fontSize: '1rem' }}>
-                  {deleteCandidates.length > 0 ? '⚠️' : '✅'}
-                </span>
+                <span>{deleteCandidates.length > 0 ? <AlertTriangle size={16} /> : <CheckCircle size={16} />}</span>
                 <span>
                   {deleteCandidates.length > 0 ? (
-                    <>
-                      <strong style={{ color: 'var(--red, #f87171)' }}>{deleteCandidates.length}</strong> customer{deleteCandidates.length !== 1 ? 's' : ''}{' '}
-                      {deleteModeLabels[deleteMode].toLowerCase()} <strong>{formatDate(deleteDate + 'T00:00:00')}</strong> will be deleted
-                    </>
-                  ) : (
-                    <>No customers match this criteria</>
-                  )}
+                    <><strong style={{ color:'var(--red,#f87171)' }}>{deleteCandidates.length}</strong> customer{deleteCandidates.length !== 1 ? 's' : ''}{' '}
+                    {deleteModeLabels[deleteMode].toLowerCase()} <strong>{formatDate(deleteDate + 'T00:00:00')}</strong> will be deleted</>
+                  ) : <>No customers match this criteria</>}
                 </span>
               </div>
             )}
@@ -1324,35 +1148,63 @@ function CustomerForm({ customers, onCustomerAdded }) {
       )}
 
       {/* ═══════════════════════════════════
-          Add New Customer Card
+          1. Add Customer Card
           ═══════════════════════════════════ */}
       <div className="card cust-fade-in">
-        <div style={S.cardHeader}>
-          <div style={S.cardHeaderLeft}>
-            <div style={{ ...S.cardIcon, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.12)' }}>👤</div>
-            <div style={S.cardTitleGroup}>
-              <span style={S.cardTitleText}>Add Customer</span>
-              <span style={S.cardSubtitle}>Name and 10-digit mobile</span>
-            </div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'20px', paddingBottom:'12px', borderBottom:'1px solid var(--border-xs)', flexWrap:'wrap', gap:'10px' }}>
+          <h2 className="card-title" style={{ margin:0, padding:0, border:'none' }}>
+            <User size={18} />
+            Add Customer
+          </h2>
+          {/* Action buttons: Upload | Download | Delete */}
+          <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+            <button
+              onClick={() => { setShowUpload(!showUpload); setShowDownload(false); setShowDelete(false); }}
+              style={{
+                ...S.smallBtn,
+                borderColor: showUpload ? 'rgba(34,211,153,0.35)' : undefined,
+                color: showUpload ? 'var(--green,#4ade80)' : undefined,
+                background: showUpload ? 'rgba(34,211,153,0.07)' : undefined,
+              }}>
+              <Upload size={12} /> Upload
+            </button>
+            <button
+              onClick={() => { setShowDownload(!showDownload); setShowUpload(false); setShowDelete(false); }}
+              style={{
+                ...S.smallBtn,
+                borderColor: showDownload ? 'rgba(96,165,250,0.35)' : undefined,
+                color: showDownload ? 'var(--blue,#60a5fa)' : undefined,
+                background: showDownload ? 'rgba(96,165,250,0.07)' : undefined,
+              }}>
+              <Download size={12} /> Download
+            </button>
+            <button
+              onClick={() => { setShowDelete(!showDelete); setShowUpload(false); setShowDownload(false); }}
+              style={{
+                ...S.smallBtn,
+                borderColor: showDelete ? 'rgba(248,113,113,0.35)' : undefined,
+                color: showDelete ? 'var(--red,#f87171)' : undefined,
+                background: showDelete ? 'rgba(248,113,113,0.07)' : undefined,
+              }}>
+              <Trash2 size={12} /> Delete
+            </button>
           </div>
         </div>
-
+        
         <form onSubmit={handleSubmit} className="customer-form">
-          <div style={S.sectionLabel}><span>Details</span><div style={S.sectionLine} /></div>
-
-          <div className="form-group">
+          <div className="form-group" style={{ marginBottom: '14px' }}>
             <label className="form-label" htmlFor="customer-name">Customer Name</label>
             <div style={S.inputWrap}>
-              <span style={S.inputIcon}>👤</span>
+              <span style={S.inputIcon}><User size={14} /></span>
               <input id="customer-name" type="text" className="form-input" style={{ ...S.inputPadded, textTransform: 'uppercase' }}
                 placeholder="Enter customer name" value={name} onChange={(e) => setName(e.target.value.toUpperCase())} disabled={saving} />
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="form-group" style={{ marginBottom: '20px' }}>
             <label className="form-label" htmlFor="customer-mobile">Mobile Number</label>
             <div style={S.inputWrap}>
-              <span style={S.inputIcon}>📱</span>
+              <span style={S.inputIcon}><Smartphone size={14} /></span>
               <input id="customer-mobile" type="text" className="form-input" style={S.inputPadded}
                 placeholder="10-digit mobile number" value={mobile}
                 onChange={(e) => setMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
@@ -1370,116 +1222,81 @@ function CustomerForm({ customers, onCustomerAdded }) {
             )}
           </div>
 
-          <button type="submit" className="btn btn-primary cust-save-btn" disabled={saving}>
-            {saving ? <><span style={{ display: 'inline-block', animation: 'pulse 1s ease infinite' }}>⏳</span> Saving...</> : <>💾 Save Customer</>}
+          <button type="submit" className="btn btn-save cust-save-btn" disabled={saving}>
+            {saving ? <><Loader2 size={14} style={{ display:'inline-block', animation:'spin 1s linear infinite' }} /> Saving...</> : <><User size={14} /> Save Customer</>}
           </button>
         </form>
       </div>
 
       {/* ═══════════════════════════════════
-          Customer List Card
+          2. Customers List Card
           ═══════════════════════════════════ */}
-      <div className="card cust-fade-in" style={{ animationDelay: '0.1s' }}>
-        <div style={S.cardHeader}>
-          <div style={S.cardHeaderLeft}>
-            <div style={{ ...S.cardIcon, background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.12)' }}>📋</div>
-            <div style={S.cardTitleGroup}>
-              <span style={S.cardTitleText}>Customer List</span>
-              <span style={S.cardSubtitle}>
-                {filteredCustomers.length === customers.length
-                  ? `${customers.length} total`
-                  : `${filteredCustomers.length} of ${customers.length}`}
-              </span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={S.badge}>{customers.length}</span>
-            {customers.length > 0 && (
-              <div style={{ ...S.liveTag, color: 'var(--blue)', background: 'rgba(96,165,250,0.06)', border: '1px solid rgba(96,165,250,0.1)' }}>
-                <div style={{ ...S.liveDot, background: 'var(--blue)', boxShadow: '0 0 6px rgba(96,165,250,0.4)' }} />
-                Live
-              </div>
+      <div className="card cust-fade-in" style={{ animationDelay: '0.08s' }}>
+        {/* ── Card title row ── */}
+        <h2 className="card-title">
+          <Users size={18} />
+          Customers ({customers.length})
+        </h2>
+
+
+        {/* ── Search ── */}
+        {customers.length > 3 && (
+          <div style={S.searchWrap}>
+            <span style={S.searchIcon}><Search size={14} /></span>
+            <input type="text" className="form-input cust-search-input" style={S.searchInput}
+              placeholder="Search name or mobile..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            {searchQuery && (
+              <button style={S.searchClear} onClick={() => setSearchQuery('')}><X size={12} /></button>
             )}
           </div>
-        </div>
+        )}
 
+        {/* ── Table / Empty state ── */}
         {customers.length === 0 ? (
           <div style={S.emptyState} className="cust-fade-in">
-            <div style={S.emptyIcon}>👤</div>
+            <div style={S.emptyIcon}><User size={36} /></div>
             <div style={S.emptyTitle}>No Customers Yet</div>
             <div style={S.emptyDesc}>Add your first customer above or bulk upload via CSV.</div>
           </div>
+        ) : filteredCustomers.length === 0 ? (
+          <div style={S.emptyState}>
+            <div style={S.emptyIcon}><Search size={32} /></div>
+            <div style={S.emptyTitle}>No Matches</div>
+            <div style={S.emptyDesc}>No customers match "{searchQuery}".</div>
+          </div>
         ) : (
-          <>
-            {customers.length > 3 && (
-              <div style={S.searchWrap}>
-                <span style={S.searchIcon}>🔍</span>
-                <input type="text" className="form-input cust-search-input" style={S.searchInput}
-                  placeholder="Search name or mobile..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                {searchQuery && (
-                  <button style={S.searchClear} onClick={() => setSearchQuery('')}>✕</button>
-                )}
-              </div>
-            )}
-
-            <div style={S.collapseToggle} className="collapse-toggle-hover"
-              onClick={() => setListExpanded(!listExpanded)} role="button" tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setListExpanded(!listExpanded); } }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Records</span>
-                <span style={S.badge}>{filteredCustomers.length}</span>
-              </div>
-              <span style={{ ...S.collapseArrow, transform: listExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▼</span>
-            </div>
-
-            {listExpanded && (
-              <div className="cust-slide-down">
-                {filteredCustomers.length === 0 ? (
-                  <div style={S.emptyState}>
-                    <div style={S.emptyIcon}>🔍</div>
-                    <div style={S.emptyTitle}>No Matches</div>
-                    <div style={S.emptyDesc}>No customers match "{searchQuery}".</div>
-                  </div>
-                ) : (
-                  <div className="table-wrapper">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Name</th>
-                          <th>Mobile</th>
-                          <th>Date Added</th>
-                          <th style={{ width: '50px', textAlign: 'center' }}>Del</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredCustomers.map((customer, index) => (
-                          <tr key={customer.id} className="cust-row">
-                            <td><span style={S.rowNum}>{index + 1}</span></td>
-                            <td className="name-cell">
-                              <span style={S.avatar}>{customer.name.charAt(0).toUpperCase()}</span>
-                              {customer.name}
-                            </td>
-                            <td>{customer.mobile}</td>
-                            <td>{formatDate(customer.created_at)}</td>
-                            <td style={{ textAlign: 'center' }}>
-                              <button
-                                style={S.deleteRowBtn}
-                                className="delete-row-btn"
-                                onClick={() => setDeleteSingleConfirm(customer)}
-                                title={`Delete ${customer.name}`}>
-                                🗑️
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
+          <div className="table-wrapper">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Mobile</th>
+                  <th>Date Added</th>
+                  <th style={{ width:'50px', textAlign:'center' }}>Del</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCustomers.map((customer, index) => (
+                  <tr key={customer.id} className="cust-row">
+                    <td><span style={S.rowNum}>{index + 1}</span></td>
+                    <td className="name-cell">
+                      <span style={S.avatar}>{customer.name.charAt(0).toUpperCase()}</span>
+                      {customer.name}
+                    </td>
+                    <td>{customer.mobile}</td>
+                    <td>{formatDate(customer.created_at)}</td>
+                    <td style={{ textAlign:'center' }}>
+                      <button style={S.deleteRowBtn} className="delete-row-btn"
+                        onClick={() => setDeleteSingleConfirm(customer)} title={`Delete ${customer.name}`}>
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

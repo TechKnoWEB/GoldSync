@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { User, Scale, Gem, Search, Smartphone, CalendarDays, BarChart2, DollarSign, Banknote, Tag, Percent, FileText, Printer, RefreshCw, Pencil, Check, X, ClipboardList, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { supabase } from '../lib/supabaseClient.js';
 import {
@@ -51,8 +52,8 @@ const injectStyles = () => {
       --t1: #f0e8d8;
       --t2: #c4b699;
       --t3: #9a8c74;
-      --t4: #6e6250;
-      --t5: #3a3428;
+      --t4: #7c6f59;
+      --t5: #5f5444;
 
       --r-sm: 8px;
       --r-md: 12px;
@@ -162,6 +163,8 @@ const injectStyles = () => {
       flex-direction: column;
       gap: 20px;
       padding-bottom: 60px;
+      width: 100%;
+      min-width: 0;
     }
 
     /* ─── Hero banner ─── */
@@ -368,7 +371,7 @@ const injectStyles = () => {
       display:flex; gap:12px; align-items:flex-end;
     }
     .gc-search-wrap {
-      flex:1; position:relative;
+      flex:1; position:relative; min-width:0; width:100%;
     }
     .gc-label {
       display:block;
@@ -377,7 +380,7 @@ const injectStyles = () => {
       color: var(--t3);
       margin-bottom: 7px;
     }
-    .gc-input-wrap { position:relative; }
+    .gc-input-wrap { position:relative; width:100%; }
     .gc-input-ico {
       position:absolute; left:13px; top:50%; transform:translateY(-50%);
       font-size:0.82rem; opacity:0.35; pointer-events:none; z-index:1;
@@ -819,14 +822,49 @@ const injectStyles = () => {
 
     /* ─── Responsive ─── */
     @media(max-width:640px) {
-      .gc-hero { padding:20px; }
-      .gc-hero-title { font-size:1.2rem; }
+      .gc-hero { padding:16px; }
+      .gc-hero-title { font-size:1.15rem; }
+      .gc-hero-sub { font-size:0.72rem; }
+      .gc-hero-top { gap:10px; }
+      .gc-hero-brand { gap:10px; }
+      .gc-hero-icon { width:40px; height:40px; font-size:1.15rem; border-radius:11px; }
+      .gc-theme-toggle { padding:5px 10px 5px 7px; font-size:0.72rem; }
+
+      .gc-card { padding:16px; }
+      .gc-card-head { margin-bottom:14px; padding-bottom:12px; }
+      .gc-card-title { font-size:0.95rem; }
+      .gc-card-sub { font-size:0.68rem; }
+
       .gc-grid { grid-template-columns:1fr; }
       .gc-preview { grid-template-columns:1fr !important; gap:6px; text-align:center; }
       .gc-stats { grid-template-columns:1fr 1fr; }
       .gc-cust-card { flex-direction:column; align-items:flex-start; }
       .gc-search-row { flex-direction:column; }
       .gc-print-grid { grid-template-columns:1fr !important; }
+
+      .gc-billing-section { padding:14px; }
+      .gc-bill-summary { padding:12px; }
+      .gc-bill-row { font-size:0.78rem; }
+      .gc-bill-total-val { font-size:1rem; }
+
+      .gc-result-val { font-size:1.6rem; }
+
+      .gc-history { padding:14px; }
+
+      /* History record view mode — keep fields from overflowing */
+      .gc-record-fields { gap:12px !important; }
+      .gc-record-field-item { min-width:0; }
+
+      .gc-save-wrap { gap:8px; }
+      .gc-btn-save { font-size:0.92rem; padding:12px 28px; }
+      .gc-btn-print-last { font-size:0.8rem; padding:9px 20px; }
+    }
+
+    @media(max-width:400px) {
+      .gc-hero { padding:12px; }
+      .gc-card { padding:12px; }
+      .gc-stats { grid-template-columns:1fr; }
+      .gc-hero-title { font-size:1rem; }
     }
   `;
   document.head.appendChild(el);
@@ -1219,7 +1257,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
       <div className="gc-card" style={{ position:'relative', zIndex:20, overflow:'visible', animationDelay:'0.05s' }}>
         <div className="gc-card-head">
           <div className="gc-card-left">
-            <div className="gc-card-ico" style={{ background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.12)' }}>👤</div>
+            <div className="gc-card-ico" style={{ background:'rgba(212,175,55,0.08)', border:'1px solid rgba(212,175,55,0.12)' }}><User size={18} /></div>
             <div>
               <div className="gc-card-title">Select Customer</div>
               <div className="gc-card-sub">Search by name or mobile — history loads automatically</div>
@@ -1237,7 +1275,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
           <div className="gc-search-wrap" ref={dropdownRef} style={{ flex:1, position:'relative', zIndex:25 }}>
             <label className="gc-label">Search by Name or Mobile</label>
             <div className="gc-input-wrap">
-              <span className="gc-input-ico">🔍</span>
+              <span className="gc-input-ico"><Search size={14} /></span>
               <input
                 type="text" className="gc-input"
                 placeholder="Type customer name or mobile…"
@@ -1271,15 +1309,15 @@ function GoldCalculation({ customers, onCalculationSaved }) {
               <div>
                 <div className="gc-cust-name">{selectedCustomer.name}</div>
                 <div className="gc-cust-meta">
-                  <span className="gc-chip">📱 {selectedCustomer.mobile}</span>
-                  <span className="gc-chip">📅 Since {fmtDate(selectedCustomer.created_at)}</span>
+                  <span className="gc-chip"><Smartphone size={11} /> {selectedCustomer.mobile}</span>
+                  <span className="gc-chip"><CalendarDays size={11} /> Since {fmtDate(selectedCustomer.created_at)}</span>
                   {customerRecords.length > 0 && (
-                    <span className="gc-chip">📊 {customerRecords.length} record{customerRecords.length !== 1 ? 's' : ''}</span>
+                    <span className="gc-chip"><BarChart2 size={11} /> {customerRecords.length} record{customerRecords.length !== 1 ? 's' : ''}</span>
                   )}
                 </div>
               </div>
             </div>
-            <button className="gc-clear-btn" onClick={() => { setSelectedCustomer(null); setSearchQuery(''); setCustomerRecords([]); resetForm(); }}>✕ Clear</button>
+            <button className="gc-clear-btn" onClick={() => { setSelectedCustomer(null); setSearchQuery(''); setCustomerRecords([]); resetForm(); }}><X size={12} /> Clear</button>
           </div>
         )}
       </div>
@@ -1288,7 +1326,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
       <div className="gc-card" style={{ position:'relative', zIndex:10, animationDelay:'0.1s' }}>
         <div className="gc-card-head">
           <div className="gc-card-left">
-            <div className="gc-card-ico" style={{ background:'rgba(74,222,128,0.07)', border:'1px solid rgba(74,222,128,0.14)' }}>⚖️</div>
+            <div className="gc-card-ico" style={{ background:'rgba(74,222,128,0.07)', border:'1px solid rgba(74,222,128,0.14)' }}><Scale size={18} /></div>
             <div>
               <div className="gc-card-title">New Calculation</div>
               <div className="gc-card-sub">Enter gold details for fine gold computation</div>
@@ -1308,7 +1346,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
             <div className="gc-form-group">
               <label className="gc-label">Gold Weight <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>(grams)</span></label>
               <div className="gc-input-wrap">
-                <span className="gc-input-ico">⚖️</span>
+                <span className="gc-input-ico"><Scale size={14} /></span>
                 <input type="number" className="gc-input" placeholder="Enter gold weight" value={goldInput} onChange={e => setGoldInput(e.target.value)} step="0.0001" min="0" disabled={saving} />
               </div>
             </div>
@@ -1316,7 +1354,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
             <div className="gc-form-group">
               <label className="gc-label">Purity <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>(%)</span></label>
               <div className="gc-input-wrap">
-                <span className="gc-input-ico">💎</span>
+                <span className="gc-input-ico"><Gem size={14} /></span>
                 <input type="number" className="gc-input" placeholder="0 — 100" value={purityPercent} onChange={e => setPurityPercent(e.target.value)} step="0.01" min="0" max="100" disabled={saving} />
               </div>
             </div>
@@ -1324,7 +1362,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
             <div className="gc-form-group">
               <label className="gc-label">Customer Fine <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>(grams)</span></label>
               <div className="gc-input-wrap">
-                <span className="gc-input-ico">👤</span>
+                <span className="gc-input-ico"><User size={14} /></span>
                 <input type="number" className="gc-input" placeholder="Enter customer fine" value={customerFine} onChange={e => setCustomerFine(e.target.value)} step="0.0001" disabled={saving} />
               </div>
             </div>
@@ -1373,7 +1411,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
               <div className="gc-billing-toggle" onClick={() => setShowBilling(p => !p)}
                 role="button" tabIndex={0}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowBilling(p => !p); } }}>
-                <span style={{ fontSize:'1rem' }}>🧾</span>
+                <FileText size={16} />
                 <span className="gc-billing-toggle-label">Billing &amp; Invoice Details</span>
                 <span style={{ fontSize:'0.72rem', color:'var(--t4)', marginRight:'6px' }}>{showBilling ? 'Hide' : 'Show'}</span>
                 <span className="gc-billing-toggle-arrow" style={{ transform: showBilling ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▼</span>
@@ -1387,7 +1425,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     <div className="gc-form-group">
                       <label className="gc-label">Gold Price <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>— ₹ per gram</span></label>
                       <div className="gc-input-wrap">
-                        <span className="gc-input-ico">💰</span>
+                        <span className="gc-input-ico"><DollarSign size={14} /></span>
                         <input type="number" className="gc-input" placeholder="e.g. 7500" value={goldPrice}
                           onChange={e => { setGoldPrice(e.target.value); setPaidGoldManual(false); }} step="0.01" min="0" disabled={saving} />
                       </div>
@@ -1396,7 +1434,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     <div className="gc-form-group">
                       <label className="gc-label">Cash Paid <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>— ₹</span></label>
                       <div className="gc-input-wrap">
-                        <span className="gc-input-ico">💵</span>
+                        <span className="gc-input-ico"><Banknote size={14} /></span>
                         <input type="number" className="gc-input" placeholder="Amount received ₹" value={cashPayment}
                           onChange={e => { setCashPayment(e.target.value); setPaidGoldManual(false); }} step="0.01" min="0" disabled={saving} />
                       </div>
@@ -1405,7 +1443,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     <div className="gc-form-group">
                       <label className="gc-label">Discount <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>— ₹</span></label>
                       <div className="gc-input-wrap">
-                        <span className="gc-input-ico">🏷️</span>
+                        <span className="gc-input-ico"><Tag size={14} /></span>
                         <input type="number" className="gc-input" placeholder="Amount e.g. 50" value={discount}
                           onChange={e => setDiscount(e.target.value)} step="0.01" min="0" disabled={saving} />
                       </div>
@@ -1414,7 +1452,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                     <div className="gc-form-group">
                       <label className="gc-label">GST / Tax Rate <span style={{ textTransform:'none', fontWeight:400, fontSize:'0.68rem', color:'var(--t5)' }}>(%)</span></label>
                       <div className="gc-input-wrap">
-                        <span className="gc-input-ico">📊</span>
+                        <span className="gc-input-ico"><Percent size={14} /></span>
                         <input type="number" className="gc-input" placeholder="e.g. 3" value={taxRate}
                           onChange={e => setTaxRate(e.target.value)} step="0.01" min="0" max="100" disabled={saving} />
                       </div>
@@ -1428,8 +1466,8 @@ function GoldCalculation({ customers, onCalculationSaved }) {
 
                   {/* ── Bill Summary ── */}
                   <div className="gc-bill-summary" style={{ marginTop:'18px' }}>
-                    <div style={{ fontSize:'0.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'1.2px', color:'var(--t4)', marginBottom:'12px' }}>
-                      🧾 Current Order
+                    <div style={{ fontSize:'0.72rem', fontWeight:700, textTransform:'uppercase', letterSpacing:'1.2px', color:'var(--t4)', marginBottom:'12px', display:'flex', alignItems:'center', gap:'6px' }}>
+                      <FileText size={12} /> Current Order
                     </div>
 
                     {/* Current Order Details */}
@@ -1537,7 +1575,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                   {/* ══ Print & Save + Print Last ══ */}
                   <div className="gc-save-wrap" style={{ marginTop:'18px' }}>
                     <button type="submit" className="gc-btn-save" disabled={saving || !selectedCustomer}>
-                      {saving ? '⏳ Saving & Printing…' : '🖨️ Print & Save'}
+                      {saving ? <><Loader2 size={15} style={{animation:'spin 1s linear infinite'}} /> Saving & Printing…</> : <><Printer size={15} /> Print & Save</>}
                     </button>
                     {lastSavedData && (
                       <button
@@ -1547,7 +1585,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                         disabled={printing}
                         title="Re-print the last saved transaction without creating a new record"
                       >
-                        {printing ? '⏳ Printing…' : '🔄 Print Last Transaction'}
+                        {printing ? <><Loader2 size={14} style={{animation:'spin 1s linear infinite'}} /> Printing…</> : <><RefreshCw size={14} /> Print Last Transaction</>}
                       </button>
                     )}
                   </div>
@@ -1562,7 +1600,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
               <div className="gc-collapse-toggle" onClick={() => setHistoryExpanded(p => !p)} role="button" tabIndex={0}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setHistoryExpanded(p => !p); } }}>
                 <div className="gc-collapse-left">
-                  <span className="gc-collapse-title">📊 Transaction History</span>
+                  <span className="gc-collapse-title" style={{display:'flex',alignItems:'center',gap:'7px'}}><BarChart2 size={16} /> Transaction History</span>
                   <span className="gc-badge-count">{customerRecords.length}</span>
                 </div>
                 <span className="gc-collapse-arrow" style={{ transform: historyExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>▼</span>
@@ -1602,8 +1640,8 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                                 Editing #{i+1}
                               </span>
                               <div className="gc-action-cell">
-                                <button type="button" className="gc-btn-xs gc-btn-xs--save" onClick={() => saveEdit(rec.id)}>✓ Save</button>
-                                <button type="button" className="gc-btn-xs gc-btn-xs--cancel" onClick={cancelEdit}>✕ Cancel</button>
+                                <button type="button" className="gc-btn-xs gc-btn-xs--save" onClick={() => saveEdit(rec.id)}><Check size={12} /> Save</button>
+                                <button type="button" className="gc-btn-xs gc-btn-xs--cancel" onClick={cancelEdit}><X size={12} /> Cancel</button>
                               </div>
                             </div>
                             <div className="gc-grid" style={{ gap:'10px' }}>
@@ -1634,20 +1672,20 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'12px', flexWrap:'wrap' }}>
                             <div style={{ display:'flex', align:'center', gap:'12px', flexWrap:'wrap', flex:1 }}>
                               <span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', minWidth:'28px', height:'28px', borderRadius:'8px', background:'rgba(212,175,55,0.08)', color:'var(--gold-dk)', fontSize:'0.7rem', fontWeight:800, flexShrink:0 }}>{i+1}</span>
-                              <div style={{ display:'flex', gap:'20px', flexWrap:'wrap', alignItems:'center' }}>
-                                <div>
+                              <div className="gc-record-fields" style={{ display:'flex', gap:'14px', flexWrap:'wrap', alignItems:'center' }}>
+                                <div className="gc-record-field-item">
                                   <div style={{ fontSize:'0.62rem', color:'var(--t4)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:700 }}>Date</div>
                                   <div style={{ fontSize:'0.82rem', color:'var(--t2)', fontWeight:500 }}>{fmtDate(rec.created_at)}</div>
                                 </div>
-                                <div>
+                                <div className="gc-record-field-item">
                                   <div style={{ fontSize:'0.62rem', color:'var(--t4)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:700 }}>Balance</div>
                                   <div style={{ fontSize:'0.9rem', fontWeight:800 }} className={balClass(rec.balance)}>{fmtG(rec.balance)}g</div>
                                 </div>
-                                <div>
+                                <div className="gc-record-field-item">
                                   <div style={{ fontSize:'0.62rem', color:'var(--t4)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:700 }}>Cash (Gold)</div>
                                   <div style={{ fontSize:'0.82rem', color:'var(--blue)', fontWeight:600 }}>₹{fmtC(rec.cash_payment||0)}</div>
                                 </div>
-                                <div>
+                                <div className="gc-record-field-item">
                                   <div style={{ fontSize:'0.62rem', color:'var(--t4)', textTransform:'uppercase', letterSpacing:'0.8px', fontWeight:700 }}>Cash Paid</div>
                                   <div style={{ fontSize:'0.82rem', color:'var(--orange)', fontWeight:600 }}>{fmtG(rec.paid_gold||0)}g</div>
                                 </div>
@@ -1656,7 +1694,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                                 )}
                               </div>
                             </div>
-                            <button type="button" className="gc-btn-xs gc-btn-xs--edit" onClick={() => startEditing(rec)}>✏️</button>
+                            <button type="button" className="gc-btn-xs gc-btn-xs--edit" onClick={() => startEditing(rec)}><Pencil size={12} /></button>
                           </div>
                         )}
                       </div>
@@ -1670,7 +1708,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
           {/* Loading */}
           {loadingRecords && (
             <div className="gc-empty">
-              <span className="gc-empty-ico" style={{ animation:'pulse-dot 1.5s ease infinite', opacity:0.35 }}>⏳</span>
+              <span className="gc-empty-ico" style={{ animation:'pulse-dot 1.5s ease infinite', opacity:0.35 }}><Loader2 size={36} /></span>
               <div className="gc-empty-title">Loading Records</div>
               <div className="gc-empty-desc">Fetching transaction history…</div>
             </div>
@@ -1679,7 +1717,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
           {/* No records */}
           {selectedCustomer && !loadingRecords && customerRecords.length === 0 && !fetching && (
             <div className="gc-empty gc-fadeUp">
-              <span className="gc-empty-ico">📋</span>
+              <span className="gc-empty-ico"><ClipboardList size={36} /></span>
               <div className="gc-empty-title">No Records Yet</div>
               <div className="gc-empty-desc">No existing records for this customer. Save a new calculation below to get started.</div>
             </div>
@@ -1695,7 +1733,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                 disabled={printing}
                 title="Print the last saved order for this customer"
               >
-                {printing ? '⏳ Printing…' : '🔄 Print Last Order'}
+                {printing ? <><Loader2 size={14} style={{animation:'spin 1s linear infinite'}} /> Printing…</> : <><RefreshCw size={14} /> Print Last Order</>}
               </button>
             </div>
           )}

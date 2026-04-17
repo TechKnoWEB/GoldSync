@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
+import { LayoutDashboard, Scale, User, ClipboardList, BadgeCheck, Sun, Moon, Gem } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import { supabase } from './lib/supabaseClient.js';
 import CustomerForm    from './components/CustomerForm.jsx';
@@ -31,7 +32,7 @@ const injectAppStyles = () => {
       --gold:#d4af37; --gold-lt:#f0dea0; --gold-br:#debb50; --gold-dk:#8a6c1a;
       --gold-glow:rgba(212,175,55,.12);
       --green:#4ade80; --red:#f87171; --orange:#fbbf24; --blue:#60a5fa;
-      --t1:#f0e8d8; --t2:#c4b699; --t3:#9a8c74; --t4:#6e6250; --t5:#3a3428;
+      --t1:#f0e8d8; --t2:#c4b699; --t3:#9a8c74; --t4:#7c6f59; --t5:#5f5444;
       --sh-md:0 3px 14px rgba(0,0,0,.55),0 1px 4px rgba(0,0,0,.4);
       --sh-lg:0 8px 32px rgba(0,0,0,.6),0 3px 10px rgba(0,0,0,.45);
       --sh-gold:0 6px 28px rgba(212,175,55,.16);
@@ -141,7 +142,6 @@ const injectAppStyles = () => {
     .app-footer-inner{max-width:1200px;margin:0 auto}
     .app-footer-rule{height:1px;background:linear-gradient(90deg,transparent,var(--border-sm),transparent);margin-bottom:16px}
     .app-footer-text{text-align:center;font-size:.69rem;font-weight:400;color:var(--t5);letter-spacing:.8px;text-transform:uppercase}
-    .app-footer-gem{color:var(--gold-dk);font-size:.6rem}
 
     @media(max-width:640px){
       .app-header-inner{padding:8px 14px;gap:8px}
@@ -249,7 +249,7 @@ export default function App() {
   if (session === undefined) {
     return (
       <div className="app-init" data-theme={theme}>
-        <div className="app-init-emblem">✦</div>
+        <div className="app-init-emblem"><Gem size={28} /></div>
         <p className="app-init-text">Loading…</p>
       </div>
     );
@@ -272,11 +272,11 @@ export default function App() {
   const initial = displayName.charAt(0).toUpperCase();
 
   const TABS = [
-    { id:'dashboard',   label:'Dashboard',   ico:'◈' },
-    { id:'calculate',   label:'Calculate',   ico:'⚖️' },
-    { id:'customers',   label:'Customers',   ico:'👤' },
-    { id:'records',     label:'Records',     ico:'📋', badge: recordCount },
-    { id:'certificate', label:'Certificate', ico:'🪪' },
+    { id:'dashboard',   label:'Dashboard',   ico:<LayoutDashboard size={16} /> },
+    { id:'calculate',   label:'Calculate',   ico:<Scale size={16} /> },
+    { id:'customers',   label:'Customers',   ico:<User size={16} /> },
+    { id:'records',     label:'Records',     ico:<ClipboardList size={16} />, badge: recordCount },
+    { id:'certificate', label:'Certificate', ico:<BadgeCheck size={16} /> },
   ];
 
   const renderContent = () => {
@@ -310,7 +310,7 @@ export default function App() {
       <header className="app-header">
         <div className="app-header-inner">
           <div className="app-header-left">
-            <div className="app-logo" onClick={() => setActiveTab('dashboard')} title="Go to Dashboard">✦</div>
+            <div className="app-logo" onClick={() => setActiveTab('dashboard')} title="Go to Dashboard"><Gem size={22} /></div>
             <div>
               <div className="app-header-title">GoldSync</div>
               <div className="app-header-sub">Gold purity &amp; fine gold balance tracking</div>
@@ -330,7 +330,7 @@ export default function App() {
             <div className="app-header-sep"/>
             <button className="app-theme-btn" onClick={() => setTheme(p => p==='dark'?'light':'dark')}
               title={theme==='dark' ? 'Switch to Light mode' : 'Switch to Dark mode'}>
-              <span className="app-theme-icon">{theme==='dark'?'☀️':'🌙'}</span>
+              <span className="app-theme-icon">{theme==='dark' ? <Sun size={15}/> : <Moon size={15}/>}</span>
               <div className="app-theme-track"><div className="app-theme-thumb"/></div>
               <span className="app-theme-label">{theme==='dark'?'Light':'Dark'}</span>
             </button>
@@ -376,9 +376,7 @@ export default function App() {
         <div className="app-footer-inner">
           <div className="app-footer-rule"/>
           <p className="app-footer-text">
-            <span className="app-footer-gem">✦</span>
-            &nbsp;© {new Date().getFullYear()} GoldSync &nbsp;·&nbsp; Developed by TeamR.&nbsp;
-            <span className="app-footer-gem">✦</span>
+            &nbsp;© {new Date().getFullYear()} GoldSync &nbsp;·&nbsp; Developed by TeamR.
           </p>
         </div>
       </footer>
