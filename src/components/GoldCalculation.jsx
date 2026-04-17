@@ -789,11 +789,12 @@ const injectStyles = () => {
     /* ─── Save / Print buttons ─── */
     .gc-save-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:28px; width:100%; }
     .gc-btn-print-last {
+      display:flex; align-items:center; justify-content:center; gap:6px;
       background: transparent;
       color: var(--gold);
       font-family: var(--font); font-size:0.84rem; font-weight:600;
       letter-spacing:0.2px;
-      padding:10px 28px; border:1px solid var(--border-md); border-radius: var(--r-md);
+      padding:10px 28px; border:1px solid var(--gold); border-radius: var(--r-md);
       cursor:pointer; width:100%; max-width:380px;
       transition: all 0.25s var(--ease);
     }
@@ -1733,7 +1734,7 @@ function GoldCalculation({ customers, onCalculationSaved }) {
                 disabled={printing}
                 title="Print the last saved order for this customer"
               >
-                {printing ? <><Loader2 size={14} style={{animation:'spin 1s linear infinite'}} /> Printing…</> : <><RefreshCw size={14} /> Print Last Order</>}
+                {printing ? <><Loader2 size={14} style={{animation:'spin 1s linear infinite',flexShrink:0}} /><span>Printing…</span></> : <><RefreshCw size={14} style={{flexShrink:0}} /><span>Print Last Order</span></>}
               </button>
             </div>
           )}
