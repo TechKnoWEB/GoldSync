@@ -2,6 +2,20 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import QRCode from 'qrcode';
 import { Camera, Download, Loader2, MonitorSmartphone } from 'lucide-react';
 
+{/* How to modify it easily — key sections:
+The drawing is divided into 5 vertical zones stacked top-to-bottom. Each zone has hardcoded Y positions, so changing one zone requires adjusting all zones below it.
+
+headerH = 120 * S — controls the colored header height. Increase to give more room for shop name/QR.
+titleBarH = 22 * S — the gold/dark banner below the header.
+rowStep = 28 * S — vertical gap between each customer info row. This is the main spacing lever.
+noteH = 50 * S — height reserved for the note at the bottom.
+CARD_W / CARD_H — these are defined outside this function and set the overall card size.
+The split W * 0.60 / W * 0.40 — left column (info) vs right column (product image). Change this ratio to give more space to either side.
+S (scale factor) — all measurements multiply by S, so changing S scales the entire card uniformly. 
+
+
+*/}
+
 /* ─── Constants ──────────────────────────────────────────────────────────── */
 const CARD_W = 700;
 const CARD_H = 480;
@@ -74,7 +88,7 @@ async function drawFront(ctx, d, S) {
   ctx.clip();
 
   /* ── Header background ── */
-  const headerH = 120 * S;
+  const headerH = 110 * S;
   ctx.fillStyle = d.cardGradient.from;
   ctx.fillRect(0, 0, W, headerH);
 
@@ -116,16 +130,9 @@ async function drawFront(ctx, d, S) {
   ctx.font = `400 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.fillText((d.shopAddress || 'Shop Address').toUpperCase(), shopNameX, 74 * S);
 
-  /* ── Shop Info ── */
-  if (d.shopInfo) {
-    ctx.fillStyle = cLabel;
-    ctx.font = `400 ${9.5 * S}px 'Lexend','Segoe UI',sans-serif`;
-    ctx.fillText(d.shopInfo, shopNameX, 90 * S);
-  }
-
   /* ── Title bar ── */
   const titleBarY = headerH;
-  const titleBarH = 22 * S;
+  const titleBarH = 25 * S;
   ctx.fillStyle = cDivBg;
   ctx.fillRect(0, titleBarY, W, titleBarH);
   ctx.fillStyle = cDivTxt;
@@ -138,11 +145,11 @@ async function drawFront(ctx, d, S) {
   /* ── Middle section ── */
   const midY  = titleBarY + titleBarH;
   const midH  = (CARD_H - 36) * S - midY;  // leave room for note
-  const noteH = 50 * S;
+  const noteH = 80 * S;
   const midBottom = H - noteH;
 
-  // Right 45% background (matches DOM: right col is 45%)
-  const rightColX = W * 0.55;
+  // Right 40% background (matches DOM: right col is 40%)
+  const rightColX = W * 0.60;
 
   /* ── Customer Info rows ── */
   const rows = [
@@ -154,26 +161,26 @@ async function drawFront(ctx, d, S) {
     ['Product Karat',  d.productKarat  ? d.productKarat  + ' K' : '—', false],
   ];
 
-  const leftColW = W * 0.55;
+  const leftColW = W * 0.60;
   let rowY = midY + 20 * S;
-  const labelW  = 130 * S;
+  const labelW  = 150 * S;
   const rowX    = 16 * S;
-  const rowStep = 28 * S;
+  const rowStep = 25 * S;
 
   const colonW = 10 * S;
   rows.forEach(([lbl, val]) => {
     ctx.textAlign = 'left';
-    ctx.font      = `600 ${12 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `600 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bLabel;
     ctx.fillText(lbl.toUpperCase(), rowX, rowY);
     ctx.fillText(':', rowX + labelW, rowY);
 
-    ctx.font      = `700 ${14.5 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `700 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bText;
     // Clip value text so it doesn't overflow the left column
     ctx.save();
     ctx.beginPath();
-    ctx.rect(rowX + labelW + colonW, rowY - 16 * S, leftColW - rowX - labelW - colonW - 10 * S, 20 * S);
+    ctx.rect(rowX + labelW + colonW, rowY - 18 * S, leftColW - rowX - labelW - colonW - 10 * S, 22 * S);
     ctx.clip();
     ctx.fillText(val, rowX + labelW + colonW, rowY);
     ctx.restore();
@@ -208,10 +215,10 @@ async function drawFront(ctx, d, S) {
   ctx.stroke();
 
   const metals = [
-    ['Gold',   d.gold   ? `${d.gold}%`   : '—'],
-    ['Copper', d.copper ? `${d.copper}%` : '—'],
-    ['Silver', d.silver ? `${d.silver}%` : '—'],
-    ['Others', d.others ? `${d.others}%` : '—'],
+    ['GOLD',   d.gold   ? `${d.gold}%`   : '—'],
+    ['COPPER', d.copper ? `${d.copper}%` : '—'],
+    ['SILVER', d.silver ? `${d.silver}%` : '—'],
+    ['OTHERS', d.others ? `${d.others}%` : '—'],
   ];
   const colW = (leftColW - 32 * S) / 2;
   metals.forEach(([lbl, val], i) => {
@@ -227,20 +234,22 @@ async function drawFront(ctx, d, S) {
     ctx.fillText(val, mx + lblMeasure, my);
   });
 
-  /* ── Product Image (right 45%) ── */
+  /* ── Product Image (right 40%, centered in available vertical space) ── */
   const imgX    = rightColX + 9 * S;
-  const imgY    = midY + 14 * S;
   const imgMaxW = W - rightColX - 18 * S;
-  const imgMaxH = 190 * S;
+  // Vertical span: from midY to midBottom, with padding
+  const imgAreaPad = 14 * S;
+  const imgAreaTop = midY + imgAreaPad;
+  const imgAreaH   = midBottom - midY - imgAreaPad * 2;
 
   if (d.productImage) {
     try {
       const prodImg = await loadImage(d.productImage);
-      const scale   = Math.min(imgMaxW / prodImg.width, imgMaxH / prodImg.height, 1);
+      const scale   = Math.min(imgMaxW / prodImg.width, imgAreaH / prodImg.height, 1);
       const dw = prodImg.width  * scale;
       const dh = prodImg.height * scale;
       const dx = imgX + (imgMaxW - dw) / 2;
-      const dy = imgY + (imgMaxH - dh) / 2;
+      const dy = imgAreaTop + (imgAreaH - dh) / 2;
       ctx.save();
       roundRect(ctx, dx, dy, dw, dh, 8 * S);
       ctx.clip();
@@ -248,17 +257,19 @@ async function drawFront(ctx, d, S) {
       ctx.restore();
     } catch(e) { /* skip */ }
   } else {
-    // Placeholder box
+    // Placeholder box centered in the image area
+    const phH = Math.min(190 * S, imgAreaH);
+    const phY = imgAreaTop + (imgAreaH - phH) / 2;
     ctx.strokeStyle = bBorder;
     ctx.lineWidth   = 1.5 * S;
     ctx.setLineDash([6 * S, 4 * S]);
-    roundRect(ctx, imgX, imgY, imgMaxW, imgMaxH, 10 * S);
+    roundRect(ctx, imgX, phY, imgMaxW, phH, 10 * S);
     ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle   = bLabel;
     ctx.font        = `400 ${9 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.textAlign   = 'center';
-    ctx.fillText('Product Photo', imgX + imgMaxW / 2, imgY + imgMaxH / 2);
+    ctx.fillText('Product Photo', imgX + imgMaxW / 2, phY + phH / 2);
   }
 
   /* ── Horizontal border above note ── */
@@ -271,7 +282,7 @@ async function drawFront(ctx, d, S) {
 
   /* ── Note ── */
   ctx.fillStyle = bLabel;
-  ctx.font      = `italic 400 ${12.5 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.font      = `italic 400 ${13 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
   ctx.fillText('Note: max. deviation +/- 0.50% as per machine specification', W / 2, midBottom + 18 * S);
 
@@ -554,52 +565,54 @@ function CardFront({ d }) {
   return (
     <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:'#ffffff', borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", boxSizing:'border-box', boxShadow:'0 3px 20px rgba(0,0,0,.22)', overflow:'hidden' }}>
       <div style={{ background: d.cardGradient.from, borderRadius:'10px 10px 0 0' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', padding:'12px 20px', gap:'10px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', padding:'2px 20px', gap:'10px' }}>
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:'40px', textAlign:'center', fontWeight:800, color:c.text, letterSpacing:'.5px', lineHeight:1.5 }}>{(d.shopName||'YOUR SHOP NAME').toUpperCase()}</div>
             <div style={{ fontSize:'18px', textAlign:'center', color:c.sub, marginTop:'3px', lineHeight:1 }}>{(d.shopAddress||'Shop Address').toUpperCase()}</div>
-            {d.shopInfo && <div style={{ fontSize:'9.5px', textAlign:'center', color:c.label, marginTop:'2px', lineHeight:1.9 }}>{d.shopInfo}</div>}
           </div>
           {d.qrContent && (
             <div style={{ flexShrink:0, width:'100px', height:'100px', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <div style={{ background:'#ffffff', padding:'5px', borderRadius:'1px', display:'flex', alignItems:'center', justifyContent:'center', lineHeight:0 }}>
+              <div style={{ background:'#ffffff', padding:'2px', borderRadius:'1px', display:'flex', alignItems:'center', justifyContent:'center', lineHeight:0 }}>
                 <QRCodeCanvas content={d.qrContent} size={90} />
               </div>
             </div>
           )}
         </div>
-        <div style={{ background:c.divBg, color:c.divText, textAlign:'center', padding:'4.5px 16px', fontSize:'13px', fontWeight:800, letterSpacing:'2.8px' }}>
+        <div style={{ background:c.divBg, color:c.divText, textAlign:'center', padding:'5.5px 16px', fontSize:'13px', fontWeight:800, letterSpacing:'2.8px' }}>
           XRF GOLD TESTING CERTIFICATE (ONLY FOR SKIN)
         </div>
       </div>
 
 {/* Card Body Control*/}
-      <div style={{ display:'flex', borderBottom:`1px solid ${body.border}`, minHeight:'240px' }}>
-        <div style={{ width:'55%', flexShrink:0, display:'flex', flexDirection:'column' }}>
-          <div style={{ flex:1, padding:'1px 16px', display:'flex', flexDirection:'column', justifyContent:'center', gap:'2px' }}>
+      <div style={{ display:'flex', borderBottom:`1px solid ${body.border}` }}>
+        {/* Left column — info rows + metal report, grows with content */}
+        <div style={{ width:'60%', flexShrink:0, display:'flex', flexDirection:'column', padding:'10px 16px', gap:'6px', boxSizing:'border-box' }}>
+          {/* Info rows */}
+          <div style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
             {[['Customer Name',d.customerName,true],['Certificate No',d.certNo,false],['Date',d.date,false],['Product Name',d.productName,true],['Product Weight',d.productWeight?d.productWeight+' g':'',false],['Product Karat',d.productKarat?d.productKarat+' K':'',false]].map(([lbl,val,caps])=>(
-              <div key={lbl} style={{ display:'flex', alignItems:'center', gap:'4px', minHeight:'20px', padding:'4px 0' }}>
-                <span style={{ fontSize:'12px', color:body.label, fontWeight:600, width:'130px', flexShrink:0, lineHeight:1.6, textTransform:'uppercase', letterSpacing:'.4px' }}>{lbl}</span>
-                <span style={{ fontSize:'12px', color:body.label, fontWeight:600, flexShrink:0, lineHeight:1.6 }}>:</span>
-                <span style={{ fontSize:'14.5px', color:body.text, fontWeight:700, textTransform:caps?'uppercase':'none', flex:1, lineHeight:1.6, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'.2px' }}>{val||'—'}</span>
+              <div key={lbl} style={{ display:'flex', alignItems:'baseline', gap:'4px' }}>
+                <span style={{ fontSize:'15px', color:body.label, fontWeight:600, width:'150px', flexShrink:0, textTransform:'uppercase', letterSpacing:'.4px', lineHeight:1.6 }}>{lbl}</span>
+                <span style={{ fontSize:'15px', color:body.label, fontWeight:600, flexShrink:0, lineHeight:1.6 }}>:</span>
+                <span style={{ fontSize:'15px', color:body.text, fontWeight:700, textTransform:caps?'uppercase':'none', lineHeight:1.5, wordBreak:'break-word', letterSpacing:'.2px' }}>{val||'—'}</span>
               </div>
             ))}
           </div>
-          <div style={{ flex:1, padding:'0.5px 16px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-            <div style={{ fontSize:'15px', fontWeight:800, color:'#cc0000', textAlign:'center', textTransform:'uppercase', letterSpacing:'3.5px', marginBottom:'1px', paddingBottom:'1px', paddingTop:'5px', borderTop:`2px solid ${body.border}`, borderBottom:`2px solid ${body.border}` }}>Metal Report</div>
-            <div style={{ display:'flex', gap:'8px', marginBottom:'5px' }}>
-              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Gold : </span>{d.gold?`${d.gold}%`:'—'}</span>
-              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Copper : </span>{d.copper?`${d.copper}%`:'—'}</span>
-            </div>
-            <div style={{ display:'flex', gap:'8px' }}>
-              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Silver : </span>{d.silver?`${d.silver}%`:'—'}</span>
-              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Others : </span>{d.others?`${d.others}%`:'—'}</span>
+          {/* Metal report */}
+          <div style={{ marginTop:'4px' }}>
+            <div style={{ fontSize:'15px', fontWeight:800, color:'#cc0000', textAlign:'center', textTransform:'uppercase', letterSpacing:'3.5px', padding:'4px 0', borderTop:`2px solid ${body.border}`, borderBottom:`2px solid ${body.border}`, marginBottom:'6px' }}>Metal Report</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 8px' }}>
+              {[['GOLD',d.gold],['COPPER',d.copper],['SILVER',d.silver],['OTHERS',d.others]].map(([lbl,val])=>(
+                <span key={lbl} style={{ fontSize:'15px', color:body.text, fontWeight:700, lineHeight:1.5 }}>
+                  <span style={{ color:body.label, fontWeight:600 }}>{lbl}: </span>{val?`${val}%`:'—'}
+                </span>
+              ))}
             </div>
           </div>
         </div>
-        <div style={{ width:'45%', flexShrink:0, padding:'14px 9px', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' }}>
+        {/* Right column — image, always centered vertically and horizontally */}
+        <div style={{ width:'40%', flexShrink:0, padding:'14px 9px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:'220px', boxSizing:'border-box' }}>
           {d.productImage ? (
-            <img src={d.productImage} alt="Product" style={{ maxWidth:'100%', maxHeight:'190px', objectFit:'contain', borderRadius:'8px' }} />
+            <img src={d.productImage} alt="Product" style={{ maxWidth:'100%', maxHeight:'190px', objectFit:'contain', borderRadius:'8px', display:'block' }} />
           ) : (
             <div style={{ width:'100%', height:'190px', border:`1.5px dashed ${body.border}`, borderRadius:'10px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'8px' }}>
               <Camera size={40} style={{ opacity:.3 }} />
@@ -609,8 +622,8 @@ function CardFront({ d }) {
         </div>
       </div>
 
-      <div style={{ borderTop:`1px solid ${body.border}`, padding:'5px 16px 1px', borderRadius:'0 0 10px 10px' }}>
-        <div style={{ fontSize:'11px', color:body.label, textAlign:'center', fontStyle:'italic' }}>
+      <div style={{ borderTop:`1px solid ${body.border}`, padding:'1px 16px 1px', borderRadius:'0 0 10px 10px' }}>
+        <div style={{ fontSize:'13px', color:body.label, textAlign:'center', fontStyle:'italic' }}>
           Note: max. deviation +/- 0.50% as per machine specification
         </div>
       </div>
@@ -677,8 +690,6 @@ export default function XRFCertificate({ customers = [] }) {
 
   const [shopName,    setShopName]    = useState('');
   const [shopAddress, setShopAddress] = useState('Pathar Pratima | Mob: ');
-  const [shopInfo,    setShopInfo]    = useState('');
-
   const [customerName, setCustomerName] = useState('');
   const [custQuery,    setCustQuery]    = useState('');
   const [custResults,  setCustResults]  = useState([]);
@@ -764,7 +775,7 @@ export default function XRFCertificate({ customers = [] }) {
   }, []);
 
   const d = {
-    shopName, shopAddress, shopInfo,
+    shopName, shopAddress,
     customerName, certNo, date,
     productName, productWeight: productWt, productKarat,
     gold, silver, copper, others,
@@ -850,10 +861,6 @@ export default function XRFCertificate({ customers = [] }) {
               )}
             </div>
             <div className="xrf-field"><label className="xrf-label">Shop Address</label><input className="xrf-input" value={shopAddress} onChange={e=>setShopAddress(e.target.value)} /></div>
-            <div className="xrf-field">
-              <label className="xrf-label">Other Information <span style={{color:'var(--t5,#444)',fontWeight:400}}>(optional)</span></label>
-              <input className="xrf-input" value={shopInfo} onChange={e=>setShopInfo(e.target.value)} placeholder="Phone / GSTIN / Website…" />
-            </div>
             <hr className="xrf-divider" />
             <div className="xrf-field">
               <label className="xrf-label">Customer Name <span style={{color:'var(--t5,#444)',fontWeight:400,marginLeft:6,fontSize:'.67rem'}}>(printed in CAPITALS)</span></label>
