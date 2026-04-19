@@ -281,20 +281,16 @@ async function drawFront(ctx, d, S) {
 /* ─── Canvas Drawing: BACK ──────────────────────────────────────────────── */
 async function drawBack(ctx, d, S) {
   const W = CARD_W * S, H = CARD_H * S;
-  const light = isLight(d.cardGradient.from);
-  const cText   = light ? '#111111' : '#ece5d8';
-  const cSub    = light ? '#555555' : '#9a9080';
-  const cDivBg  = light ? '#d49e63' : '#e0d09a';
-  const cDivTxt = light ? '#e8dcc0' : '#1a1200';
-  const cNumBg  = light ? '#2a2015' : '#d4af37';
-  const cNumTxt = light ? '#e8dcc0' : '#1a1000';
-  const cBorder = light ? 'rgba(0,0,0,0.13)' : 'rgba(255,255,255,0.10)';
+  const cText   = '#111111';
+  const cSub    = '#555555';
+  const cDivBg  = '#d49e63';
+  const cDivTxt = '#e8dcc0';
+  const cNumBg  = '#2a2015';
+  const cNumTxt = '#e8dcc0';
+  const cBorder = 'rgba(0,0,0,0.13)';
 
-  // Card background gradient
-  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
-  bgGrad.addColorStop(0, d.cardGradient.from);
-  bgGrad.addColorStop(1, d.cardGradient.to);
-  ctx.fillStyle = bgGrad;
+  // Card background — always white
+  ctx.fillStyle = '#ffffff';
   roundRect(ctx, 0, 0, W, H, 10 * S);
   ctx.fill();
 
@@ -305,8 +301,8 @@ async function drawBack(ctx, d, S) {
   /* ── Watermark ── */
   if (d.showWatermark !== false) {
     ctx.save();
-    ctx.globalAlpha = light ? 0.04 : 0.045;
-    ctx.fillStyle   = light ? '#000000' : '#ffffff';
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle   = '#000000';
     ctx.font        = `900 ${55 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.textAlign   = 'center';
     ctx.translate(W / 2, H / 2);
@@ -631,20 +627,19 @@ const DEFAULT_CONDITIONS = [
 ];
 
 function CardBack({ d }) {
-  const light = isLight(d.cardGradient.from);
   const c = {
-    text:    light ? '#111111' : '#ece5d8',
-    sub:     light ? '#555555' : '#9a9080',
-    border:  light ? 'rgba(0,0,0,.13)' : 'rgba(255,255,255,.10)',
-    divBg:   light ? '#d49e63'          : '#e0d09a',
-    divText: light ? '#e8dcc0'          : '#1a1200',
-    wmColor: light ? 'rgba(0,0,0,.04)' : 'rgba(255,255,255,.045)',
-    numBg:   light ? '#2a2015'          : '#d4af37',
-    numText: light ? '#e8dcc0'          : '#1a1000',
-    shadow:  light ? '0 3px 12px rgba(0,0,0,.12)' : '0 3px 20px rgba(0,0,0,.55)',
+    text:    '#111111',
+    sub:     '#555555',
+    border:  'rgba(0,0,0,.13)',
+    divBg:   '#d49e63',
+    divText: '#e8dcc0',
+    wmColor: 'rgba(0,0,0,.04)',
+    numBg:   '#2a2015',
+    numText: '#e8dcc0',
+    shadow:  '0 3px 12px rgba(0,0,0,.12)',
   };
   return (
-    <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:`linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
+    <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:'#ffffff', borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
       {d.showWatermark !== false && (
         <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', userSelect:'none', zIndex:0 }}>
           <div style={{ fontSize:'58px', fontWeight:900, color:c.wmColor, transform:'rotate(-28deg)', textAlign:'center', lineHeight:1.1, whiteSpace:'nowrap', letterSpacing:'1px' }}>{(d.shopName||'GOLDSYNC').toUpperCase()}</div>
