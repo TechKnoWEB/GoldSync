@@ -92,8 +92,6 @@ const injectAppStyles = () => {
     .app-header-sep{width:1px;height:22px;background:var(--border-sm);margin:0 3px;flex-shrink:0}
     .app-header-accent{position:absolute;bottom:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.32),transparent)}
 
-    .app-user-pill{display:flex;align-items:center;gap:9px;background:var(--bg-raised);border:1px solid var(--border-sm);border-radius:100px;padding:4px 13px 4px 5px;cursor:default;transition:border-color .25s,box-shadow .25s}
-    .app-user-pill:hover{border-color:var(--border-md);box-shadow:0 2px 12px rgba(212,175,55,.08)}
     .app-avatar-wrap{position:relative;flex-shrink:0}
     .app-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold-dk),var(--gold));display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#1a1000;border:2px solid rgba(212,175,55,.25)}
     .app-avatar-status{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;background:var(--green);border:2px solid var(--bg-raised)}
@@ -114,6 +112,18 @@ const injectAppStyles = () => {
     .app-signout:hover{border-color:rgba(248,113,113,.4);color:var(--red);background:rgba(248,113,113,.07);transform:translateY(-1px);box-shadow:0 4px 12px rgba(248,113,113,.1)}
     .app-signout svg{transition:transform .25s var(--ease)}
     .app-signout:hover svg{transform:translateX(2px)}
+
+    .app-user-dropdown{position:relative;flex-shrink:0}
+    .app-user-pill{display:flex;align-items:center;gap:9px;background:var(--bg-raised);border:1px solid var(--border-sm);border-radius:100px;padding:4px 13px 4px 5px;cursor:pointer;transition:border-color .25s,box-shadow .25s;outline:none;font-family:var(--font)}
+    .app-user-pill:hover,.app-user-pill[aria-expanded="true"]{border-color:var(--border-md);box-shadow:0 2px 12px rgba(212,175,55,.08)}
+    .app-user-chevron{margin-left:2px;color:var(--t4);transition:transform .25s var(--ease);flex-shrink:0}
+    .app-user-pill[aria-expanded="true"] .app-user-chevron{transform:rotate(180deg)}
+    .app-user-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:200px;background:var(--bg-raised);border:1px solid var(--border-md);border-radius:14px;box-shadow:var(--sh-lg);padding:6px;z-index:300;animation:fadeUp .2s var(--ease)}
+    .app-user-menu-header{padding:10px 12px 8px;border-bottom:1px solid var(--border-xs);margin-bottom:4px}
+    .app-user-menu-name{font-size:.82rem;font-weight:700;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .app-user-menu-email{font-size:.68rem;color:var(--t4);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .app-user-menu-item{display:flex;align-items:center;gap:9px;width:100%;padding:9px 12px;border:none;border-radius:9px;background:none;cursor:pointer;font-family:var(--font);font-size:.78rem;font-weight:500;color:var(--t3);transition:all .2s;text-align:left;outline:none}
+    .app-user-menu-item:hover{background:rgba(248,113,113,.08);color:var(--red)}
 
     .app-nav{position:fixed;top:70px;left:0;right:0;z-index:199;background:var(--bg-nav);border-bottom:1px solid var(--border-xs);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:background .4s,border-color .3s}
     .app-nav-inner{max-width:1200px;margin:0 auto;padding:6px 24px;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
@@ -153,11 +163,10 @@ const injectAppStyles = () => {
       .app-tab{padding:8px 10px;font-size:.78rem}
       .app-main{margin-top:106px;padding:0}
       .app-content{padding:12px 14px}
-      .app-user-name,.app-user-role,.app-theme-label,.app-header-sep{display:none}
+      .app-user-name,.app-user-role,.app-theme-label{display:none}
       .app-header-right{gap:5px}
       .app-theme-btn{padding:7px 9px}
-      .app-signout{padding:7px 10px}
-      .app-signout span{display:none}
+      .app-user-chevron{display:none}
     }
   `;
   document.head.appendChild(el);
@@ -207,6 +216,17 @@ export default function App() {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
   };
+
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = e => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const [activeTab,   setActiveTab]   = useState('calculate');
   const [customers,   setCustomers]   = useState([]);
@@ -290,7 +310,7 @@ export default function App() {
       case 'dashboard':   return <Dashboard />;
       case 'customers':   return <CustomerForm customers={customers} onCustomerAdded={fetchCustomers} />;
       case 'records':     return <Records onRecordChange={fetchRecordCount} setRecordCount={setRecordCount} />;
-      case 'certificate': return <XRFCertificate />;
+      case 'certificate': return <XRFCertificate customers={customers} />;
       default:            return <GoldCalculation customers={customers} onCalculationSaved={fetchRecordCount} />;
     }
   };
@@ -317,31 +337,48 @@ export default function App() {
             </div>
           </div>
           <div className="app-header-right">
-            <div className="app-user-pill" title={user?.email}>
-              <div className="app-avatar-wrap">
-                <div className="app-avatar">{initial}</div>
-                <div className="app-avatar-status"/>
-              </div>
-              <div>
-                <div className="app-user-name">{displayName}</div>
-                <div className="app-user-role">{user?.email}</div>
-              </div>
-            </div>
-            <div className="app-header-sep"/>
             <button className="app-theme-btn" onClick={() => setTheme(p => p==='dark'?'light':'dark')}
               title={theme==='dark' ? 'Switch to Light mode' : 'Switch to Dark mode'}>
               <span className="app-theme-icon">{theme==='dark' ? <Sun size={15}/> : <Moon size={15}/>}</span>
               <div className="app-theme-track"><div className="app-theme-thumb"/></div>
               <span className="app-theme-label">{theme==='dark'?'Light':'Dark'}</span>
             </button>
-            <button className="app-signout" onClick={signOut} title="Sign out">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-              <span>Sign Out</span>
-            </button>
+            <div className="app-user-dropdown" ref={userMenuRef}>
+              <button
+                className="app-user-pill"
+                aria-expanded={userMenuOpen}
+                aria-haspopup="true"
+                onClick={() => setUserMenuOpen(o => !o)}
+              >
+                <div className="app-avatar-wrap">
+                  <div className="app-avatar">{initial}</div>
+                  <div className="app-avatar-status"/>
+                </div>
+                <div>
+                  <div className="app-user-name">{displayName}</div>
+                  <div className="app-user-role">{user?.email}</div>
+                </div>
+                <svg className="app-user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              {userMenuOpen && (
+                <div className="app-user-menu" role="menu">
+                  <div className="app-user-menu-header">
+                    <div className="app-user-menu-name">{displayName}</div>
+                    <div className="app-user-menu-email">{user?.email}</div>
+                  </div>
+                  <button className="app-user-menu-item" role="menuitem" onClick={() => { setUserMenuOpen(false); signOut(); }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                      <polyline points="16 17 21 12 16 7"/>
+                      <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div className="app-header-accent"/>

@@ -14,11 +14,11 @@ const KARAT_METAL_PRESETS = {
 };
 
 const GRADIENT_PRESETS = [
-  { name: 'White',         from: '#ffffff', to: '#ffffff', angle: 135 },
-  { name: 'Midnight Gold', from: '#0d1b2e', to: '#b8860b', angle: 135 },
-  { name: 'Antique Gold',  from: '#7a5c00', to: '#d4af37', angle: 135 },
-  { name: 'Rose Gold',     from: '#3d1515', to: '#c8826e', angle: 135 },
-  { name: 'Deep Navy Gold',from: '#0a1628', to: '#c8960c', angle: 120 },
+  { name: 'White',        from: '#ffffff', to: '#ffffff', angle: 135 },
+  { name: 'Midnight',     from: '#0d1b2e', to: '#0d1b2e', angle: 135 },
+  { name: 'Antique Gold', from: '#d4af37', to: '#d4af37', angle: 135 },
+  { name: 'Rose Gold',    from: '#3d1515', to: '#3d1515', angle: 135 },
+  { name: 'Deep Navy',    from: '#0a1628', to: '#0a1628', angle: 120 },
 ];
 
 /* ─── Helpers ────────────────────────────────────────────────────────────── */
@@ -75,10 +75,7 @@ async function drawFront(ctx, d, S) {
 
   /* ── Header background ── */
   const headerH = 120 * S;
-  const hGrad = ctx.createLinearGradient(0, 0, W, headerH);
-  hGrad.addColorStop(0, d.cardGradient.from);
-  hGrad.addColorStop(1, d.cardGradient.to);
-  ctx.fillStyle = hGrad;
+  ctx.fillStyle = d.cardGradient.from;
   ctx.fillRect(0, 0, W, headerH);
 
   /* ── QR Code ── */
@@ -109,21 +106,21 @@ async function drawFront(ctx, d, S) {
 
   /* ── Shop Name ── */
   ctx.fillStyle = cText;
-  ctx.font = `800 ${30 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.font = `800 ${40 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
   const shopNameX = (textAreaW) / 2 + 20 * S;
-  ctx.fillText((d.shopName || 'YOUR SHOP NAME').toUpperCase(), shopNameX, 48 * S);
+  ctx.fillText((d.shopName || 'YOUR SHOP NAME').toUpperCase(), shopNameX, 52 * S);
 
   /* ── Shop Address ── */
   ctx.fillStyle = cSub;
-  ctx.font = `400 ${14 * S}px 'Lexend','Segoe UI',sans-serif`;
-  ctx.fillText((d.shopAddress || 'Shop Address').toUpperCase(), shopNameX, 66 * S);
+  ctx.font = `400 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.fillText((d.shopAddress || 'Shop Address').toUpperCase(), shopNameX, 74 * S);
 
   /* ── Shop Info ── */
   if (d.shopInfo) {
     ctx.fillStyle = cLabel;
-    ctx.font = `400 ${9 * S}px 'Lexend','Segoe UI',sans-serif`;
-    ctx.fillText(d.shopInfo, shopNameX, 82 * S);
+    ctx.font = `400 ${9.5 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.fillText(d.shopInfo, shopNameX, 90 * S);
   }
 
   /* ── Title bar ── */
@@ -132,25 +129,20 @@ async function drawFront(ctx, d, S) {
   ctx.fillStyle = cDivBg;
   ctx.fillRect(0, titleBarY, W, titleBarH);
   ctx.fillStyle = cDivTxt;
-  ctx.font      = `800 ${9.5 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.font      = `800 ${13 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
   ctx.letterSpacing = `${2.8 * S}px`;
-  ctx.fillText('XRF GOLD TESTING CERTIFICATE (ONLY FOR SKIN)', W / 2, titleBarY + 15 * S);
+  ctx.fillText('XRF GOLD TESTING CERTIFICATE (ONLY FOR SKIN)', W / 2, titleBarY + 17 * S);
   ctx.letterSpacing = '0px';
 
   /* ── Middle section ── */
   const midY  = titleBarY + titleBarH;
   const midH  = (CARD_H - 36) * S - midY;  // leave room for note
-  const noteH = 28 * S;
+  const noteH = 50 * S;
   const midBottom = H - noteH;
 
-  // Left 50% background (white already)
-  // Right 50% background
-  const sideGrad = ctx.createLinearGradient(W / 2, midY, W, midBottom);
-  sideGrad.addColorStop(0, d.cardGradient.from);
-  sideGrad.addColorStop(1, d.cardGradient.to);
-  ctx.fillStyle = sideGrad;
-  ctx.fillRect(W / 2, midY, W / 2, midBottom - midY);
+  // Right 45% background (matches DOM: right col is 45%)
+  const rightColX = W * 0.55;
 
   /* ── Customer Info rows ── */
   const rows = [
@@ -162,54 +154,57 @@ async function drawFront(ctx, d, S) {
     ['Product Karat',  d.productKarat  ? d.productKarat  + ' K' : '—', false],
   ];
 
-  let rowY = midY + 16 * S;
-  const labelW  = 105 * S;
+  const leftColW = W * 0.55;
+  let rowY = midY + 20 * S;
+  const labelW  = 130 * S;
   const rowX    = 16 * S;
-  const rowStep = 30 * S;
+  const rowStep = 28 * S;
 
+  const colonW = 10 * S;
   rows.forEach(([lbl, val]) => {
     ctx.textAlign = 'left';
-    ctx.font      = `600 ${10 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `600 ${12 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bLabel;
     ctx.fillText(lbl.toUpperCase(), rowX, rowY);
+    ctx.fillText(':', rowX + labelW, rowY);
 
-    ctx.font      = `700 ${12 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `700 ${14.5 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bText;
     // Clip value text so it doesn't overflow the left column
     ctx.save();
     ctx.beginPath();
-    ctx.rect(rowX + labelW, rowY - 14 * S, W / 2 - rowX - labelW - 10 * S, 18 * S);
+    ctx.rect(rowX + labelW + colonW, rowY - 16 * S, leftColW - rowX - labelW - colonW - 10 * S, 20 * S);
     ctx.clip();
-    ctx.fillText(val, rowX + labelW, rowY);
+    ctx.fillText(val, rowX + labelW + colonW, rowY);
     ctx.restore();
 
     rowY += rowStep;
   });
 
   /* ── Metal Report ── */
-  const metalY = rowY + 8 * S;
+  const metalY = rowY + 1 * S;
 
-  // Top border
+  // Top border (2px, matching DOM)
   ctx.strokeStyle = bBorder;
-  ctx.lineWidth   = 1.5 * S;
+  ctx.lineWidth   = 2 * S;
   ctx.beginPath();
   ctx.moveTo(rowX, metalY - 4 * S);
-  ctx.lineTo(W / 2 - 16 * S, metalY - 4 * S);
+  ctx.lineTo(leftColW - 16 * S, metalY - 4 * S);
   ctx.stroke();
 
   ctx.fillStyle = '#cc0000';
-  ctx.font      = `800 ${10 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.font      = `800 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
-  ctx.letterSpacing = `${1.5 * S}px`;
-  ctx.fillText('METAL REPORT', W / 4, metalY + 12 * S);
+  ctx.letterSpacing = `${3.5 * S}px`;
+  ctx.fillText('METAL REPORT', leftColW / 2, metalY + 16 * S);
   ctx.letterSpacing = '0px';
 
-  // Bottom border under title
+  // Bottom border under title (2px, matching DOM)
   ctx.strokeStyle = bBorder;
-  ctx.lineWidth   = 1.5 * S;
+  ctx.lineWidth   = 2 * S;
   ctx.beginPath();
-  ctx.moveTo(rowX, metalY + 18 * S);
-  ctx.lineTo(W / 2 - 16 * S, metalY + 18 * S);
+  ctx.moveTo(rowX, metalY + 22 * S);
+  ctx.lineTo(leftColW - 16 * S, metalY + 22 * S);
   ctx.stroke();
 
   const metals = [
@@ -218,25 +213,25 @@ async function drawFront(ctx, d, S) {
     ['Silver', d.silver ? `${d.silver}%` : '—'],
     ['Others', d.others ? `${d.others}%` : '—'],
   ];
-  const colW = (W / 2 - 32 * S) / 2;
+  const colW = (leftColW - 32 * S) / 2;
   metals.forEach(([lbl, val], i) => {
     const mx = rowX + (i % 2) * colW;
-    const my = metalY + 34 * S + Math.floor(i / 2) * 26 * S;
+    const my = metalY + 40 * S + Math.floor(i / 2) * 28 * S;
     ctx.textAlign = 'left';
-    ctx.font      = `600 ${12 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `600 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bLabel;
     ctx.fillText(`${lbl}: `, mx, my);
     const lblMeasure = ctx.measureText(`${lbl}: `).width;
-    ctx.font      = `700 ${12 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `700 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bText;
     ctx.fillText(val, mx + lblMeasure, my);
   });
 
-  /* ── Product Image (right 50%) ── */
-  const imgX    = W / 2 + 14 * S;
+  /* ── Product Image (right 45%) ── */
+  const imgX    = rightColX + 9 * S;
   const imgY    = midY + 14 * S;
-  const imgMaxW = W / 2 - 28 * S;
-  const imgMaxH = midBottom - midY - 28 * S;
+  const imgMaxW = W - rightColX - 18 * S;
+  const imgMaxH = 190 * S;
 
   if (d.productImage) {
     try {
@@ -276,7 +271,7 @@ async function drawFront(ctx, d, S) {
 
   /* ── Note ── */
   ctx.fillStyle = bLabel;
-  ctx.font      = `italic 400 ${10.5 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.font      = `italic 400 ${12.5 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
   ctx.fillText('Note: max. deviation +/- 0.50% as per machine specification', W / 2, midBottom + 18 * S);
 
@@ -308,15 +303,17 @@ async function drawBack(ctx, d, S) {
   ctx.clip();
 
   /* ── Watermark ── */
-  ctx.save();
-  ctx.globalAlpha = light ? 0.04 : 0.045;
-  ctx.fillStyle   = light ? '#000000' : '#ffffff';
-  ctx.font        = `900 ${55 * S}px 'Lexend','Segoe UI',sans-serif`;
-  ctx.textAlign   = 'center';
-  ctx.translate(W / 2, H / 2);
-  ctx.rotate(-28 * Math.PI / 180);
-  ctx.fillText((d.shopName || 'GOLDSYNC').toUpperCase(), 0, 0);
-  ctx.restore();
+  if (d.showWatermark !== false) {
+    ctx.save();
+    ctx.globalAlpha = light ? 0.04 : 0.045;
+    ctx.fillStyle   = light ? '#000000' : '#ffffff';
+    ctx.font        = `900 ${55 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.textAlign   = 'center';
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(-28 * Math.PI / 180);
+    ctx.fillText((d.shopName || 'GOLDSYNC').toUpperCase(), 0, 0);
+    ctx.restore();
+  }
 
   /* ── Title bar ── */
   const titleBarH = 28 * S;
@@ -560,11 +557,11 @@ function CardFront({ d }) {
 
   return (
     <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:'#ffffff', borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", boxSizing:'border-box', boxShadow:'0 3px 20px rgba(0,0,0,.22)', overflow:'hidden' }}>
-      <div style={{ background: `linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px 10px 0 0' }}>
+      <div style={{ background: d.cardGradient.from, borderRadius:'10px 10px 0 0' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', padding:'12px 20px', gap:'10px' }}>
           <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:'30px', textAlign:'center', fontWeight:800, color:c.text, letterSpacing:'.5px', lineHeight:1.5 }}>{(d.shopName||'YOUR SHOP NAME').toUpperCase()}</div>
-            <div style={{ fontSize:'15px', textAlign:'center', color:c.sub, marginTop:'3px', lineHeight:1.0 }}>{(d.shopAddress||'Shop Address').toUpperCase()}</div>
+            <div style={{ fontSize:'40px', textAlign:'center', fontWeight:800, color:c.text, letterSpacing:'.5px', lineHeight:1.5 }}>{(d.shopName||'YOUR SHOP NAME').toUpperCase()}</div>
+            <div style={{ fontSize:'18px', textAlign:'center', color:c.sub, marginTop:'3px', lineHeight:1 }}>{(d.shopAddress||'Shop Address').toUpperCase()}</div>
             {d.shopInfo && <div style={{ fontSize:'9.5px', textAlign:'center', color:c.label, marginTop:'2px', lineHeight:1.9 }}>{d.shopInfo}</div>}
           </div>
           {d.qrContent && (
@@ -575,34 +572,36 @@ function CardFront({ d }) {
             </div>
           )}
         </div>
-        <div style={{ background:c.divBg, color:c.divText, textAlign:'center', padding:'4.5px 16px', fontSize:'10px', fontWeight:800, letterSpacing:'2.8px' }}>
+        <div style={{ background:c.divBg, color:c.divText, textAlign:'center', padding:'4.5px 16px', fontSize:'13px', fontWeight:800, letterSpacing:'2.8px' }}>
           XRF GOLD TESTING CERTIFICATE (ONLY FOR SKIN)
         </div>
       </div>
 
+{/* Card Body Control*/}
       <div style={{ display:'flex', borderBottom:`1px solid ${body.border}`, minHeight:'240px' }}>
-        <div style={{ width:'50%', flexShrink:0, display:'flex', flexDirection:'column' }}>
-          <div style={{ flex:1, padding:'10px 16px', display:'flex', flexDirection:'column', justifyContent:'center', gap:'2px' }}>
+        <div style={{ width:'55%', flexShrink:0, display:'flex', flexDirection:'column' }}>
+          <div style={{ flex:1, padding:'1px 16px', display:'flex', flexDirection:'column', justifyContent:'center', gap:'2px' }}>
             {[['Customer Name',d.customerName,true],['Certificate No',d.certNo,false],['Date',d.date,false],['Product Name',d.productName,true],['Product Weight',d.productWeight?d.productWeight+' g':'',false],['Product Karat',d.productKarat?d.productKarat+' K':'',false]].map(([lbl,val,caps])=>(
-              <div key={lbl} style={{ display:'flex', alignItems:'center', gap:'8px', minHeight:'20px', padding:'4px 0' }}>
-                <span style={{ fontSize:'10px', color:body.label, fontWeight:600, width:'105px', flexShrink:0, lineHeight:1.6, textTransform:'uppercase', letterSpacing:'.4px' }}>{lbl}</span>
-                <span style={{ fontSize:'12px', color:body.text, fontWeight:700, textTransform:caps?'uppercase':'none', flex:1, lineHeight:1.6, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'.2px' }}>{val||'—'}</span>
+              <div key={lbl} style={{ display:'flex', alignItems:'center', gap:'4px', minHeight:'20px', padding:'4px 0' }}>
+                <span style={{ fontSize:'12px', color:body.label, fontWeight:600, width:'130px', flexShrink:0, lineHeight:1.6, textTransform:'uppercase', letterSpacing:'.4px' }}>{lbl}</span>
+                <span style={{ fontSize:'12px', color:body.label, fontWeight:600, flexShrink:0, lineHeight:1.6 }}>:</span>
+                <span style={{ fontSize:'14.5px', color:body.text, fontWeight:700, textTransform:caps?'uppercase':'none', flex:1, lineHeight:1.6, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'.2px' }}>{val||'—'}</span>
               </div>
             ))}
           </div>
-          <div style={{ flex:1, padding:'10px 16px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
-            <div style={{ fontSize:'10px', fontWeight:800, color:'#cc0000', textAlign:'center', textTransform:'uppercase', letterSpacing:'1.5px', marginBottom:'8px', paddingBottom:'5px', paddingTop:'5px', borderTop:`2px solid ${body.border}`, borderBottom:`2px solid ${body.border}` }}>Metal Report</div>
+          <div style={{ flex:1, padding:'0.5px 16px', display:'flex', flexDirection:'column', justifyContent:'center' }}>
+            <div style={{ fontSize:'15px', fontWeight:800, color:'#cc0000', textAlign:'center', textTransform:'uppercase', letterSpacing:'3.5px', marginBottom:'1px', paddingBottom:'1px', paddingTop:'5px', borderTop:`2px solid ${body.border}`, borderBottom:`2px solid ${body.border}` }}>Metal Report</div>
             <div style={{ display:'flex', gap:'8px', marginBottom:'5px' }}>
-              <span style={{ fontSize:'12px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Gold : </span>{d.gold?`${d.gold}%`:'—'}</span>
-              <span style={{ fontSize:'12px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Copper : </span>{d.copper?`${d.copper}%`:'—'}</span>
+              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Gold : </span>{d.gold?`${d.gold}%`:'—'}</span>
+              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Copper : </span>{d.copper?`${d.copper}%`:'—'}</span>
             </div>
             <div style={{ display:'flex', gap:'8px' }}>
-              <span style={{ fontSize:'12px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Silver : </span>{d.silver?`${d.silver}%`:'—'}</span>
-              <span style={{ fontSize:'12px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Others : </span>{d.others?`${d.others}%`:'—'}</span>
+              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Silver : </span>{d.silver?`${d.silver}%`:'—'}</span>
+              <span style={{ fontSize:'15px', color:body.text, fontWeight:700, flex:1 }}><span style={{ color:body.label, fontWeight:600 }}>Others : </span>{d.others?`${d.others}%`:'—'}</span>
             </div>
           </div>
         </div>
-        <div style={{ width:'50%', flexShrink:0, padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' }}>
+        <div style={{ width:'45%', flexShrink:0, padding:'14px 9px', display:'flex', alignItems:'center', justifyContent:'center', position:'relative', overflow:'hidden' }}>
           {d.productImage ? (
             <img src={d.productImage} alt="Product" style={{ maxWidth:'100%', maxHeight:'190px', objectFit:'contain', borderRadius:'8px' }} />
           ) : (
@@ -646,9 +645,11 @@ function CardBack({ d }) {
   };
   return (
     <div style={{ width:`${CARD_W}px`, minHeight:`${CARD_H}px`, background:`linear-gradient(${d.cardGradient.angle}deg, ${d.cardGradient.from}, ${d.cardGradient.to})`, borderRadius:'10px', fontFamily:"'Lexend','Segoe UI',sans-serif", overflow:'hidden', boxSizing:'border-box', boxShadow:c.shadow, position:'relative', display:'flex', flexDirection:'column' }}>
-      <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', userSelect:'none', zIndex:0 }}>
-        <div style={{ fontSize:'58px', fontWeight:900, color:c.wmColor, transform:'rotate(-28deg)', textAlign:'center', lineHeight:1.1, whiteSpace:'nowrap', letterSpacing:'1px' }}>{(d.shopName||'GOLDSYNC').toUpperCase()}</div>
-      </div>
+      {d.showWatermark !== false && (
+        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', userSelect:'none', zIndex:0 }}>
+          <div style={{ fontSize:'58px', fontWeight:900, color:c.wmColor, transform:'rotate(-28deg)', textAlign:'center', lineHeight:1.1, whiteSpace:'nowrap', letterSpacing:'1px' }}>{(d.shopName||'GOLDSYNC').toUpperCase()}</div>
+        </div>
+      )}
       <div style={{ background:c.divBg, color:c.divText, textAlign:'center', padding:'6px 16px', fontSize:'10px', fontWeight:800, letterSpacing:'2.5px', position:'relative', zIndex:1 }}>TERMS &amp; CONDITIONS</div>
       <div style={{ flex:1, padding:'18px 22px 16px', position:'relative', zIndex:1 }}>
         {(d.conditions||[]).map((point,i)=>(
@@ -671,7 +672,7 @@ function CardBack({ d }) {
 }
 
 /* ─── Main Component ─────────────────────────────────────────────────────── */
-export default function XRFCertificate() {
+export default function XRFCertificate({ customers = [] }) {
   useEffect(() => { injectStyles(); }, []);
 
   const [view,        setView]        = useState('front');
@@ -680,10 +681,14 @@ export default function XRFCertificate() {
   const [previewScale, setPreviewScale] = useState(1);
 
   const [shopName,    setShopName]    = useState('');
-  const [shopAddress, setShopAddress] = useState('Pathar Pratima');
+  const [shopAddress, setShopAddress] = useState('Pathar Pratima | Mob: ');
   const [shopInfo,    setShopInfo]    = useState('');
 
   const [customerName, setCustomerName] = useState('');
+  const [custQuery,    setCustQuery]    = useState('');
+  const [custResults,  setCustResults]  = useState([]);
+  const [showCustDrop, setShowCustDrop] = useState(false);
+  const custDropRef = useRef(null);
   const [certNo,       setCertNo]       = useState(genCertNo);
   const [date,         setDate]         = useState(todayFormatted);
   const [productName,  setProductName]  = useState('');
@@ -698,6 +703,7 @@ export default function XRFCertificate() {
   const [cardGradient,   setCardGradient]   = useState(() => GRADIENT_PRESETS[0]);
   const [productImage,   setProductImage]   = useState(null);
   const [imageOnBack,    setImageOnBack]    = useState(false);
+  const [showWatermark,  setShowWatermark]  = useState(true);
   const [conditionsText, setConditionsText] = useState(() => DEFAULT_CONDITIONS.join('\n'));
 
   useEffect(() => {
@@ -717,6 +723,22 @@ export default function XRFCertificate() {
     // Fallback for non-preset values: keep existing behavior for Gold only.
     setGold(String(Math.round((karat / 24) * 100 * 100) / 100));
   }, [productKarat]);
+
+  // ── Shop name search filter ──
+  useEffect(() => {
+    if (!custQuery.trim()) { setCustResults([]); setShowCustDrop(false); return; }
+    const q = custQuery.trim().toLowerCase();
+    const f = customers.filter(c => c.name.toLowerCase().includes(q) || c.mobile.includes(q));
+    setCustResults(f);
+    setShowCustDrop(f.length > 0);
+  }, [custQuery, customers]);
+
+  // ── Click outside to close dropdown ──
+  useEffect(() => {
+    const h = e => { if (custDropRef.current && !custDropRef.current.contains(e.target)) setShowCustDrop(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
 
   useEffect(() => {
     const el = stageRef.current;
@@ -751,7 +773,7 @@ export default function XRFCertificate() {
     customerName, certNo, date,
     productName, productWeight: productWt, productKarat,
     gold, silver, copper, others,
-    cardGradient, productImage, imageOnBack,
+    cardGradient, productImage, imageOnBack, showWatermark,
     qrContent: (() => {
       const lines = [
         shopName     && shopName.toUpperCase(),
@@ -779,8 +801,10 @@ export default function XRFCertificate() {
     if (downloading) return;
     setDl(true);
     try {
-      // Load Lexend font into the canvas context
-      await document.fonts.load(`800 30px 'Lexend'`);
+      // Load Lexend font variants used by the canvas draw functions
+      await document.fonts.load(`800 40px 'Lexend'`);
+      await document.fonts.load(`700 18px 'Lexend'`);
+      await document.fonts.load(`600 12px 'Lexend'`);
       await document.fonts.load(`400 10px 'Lexend'`);
       await downloadCard(side, d, shopName, certNo);
     } catch (err) {
@@ -804,7 +828,32 @@ export default function XRFCertificate() {
         <div>
           <div className="xrf-panel">
             <div className="xrf-panel-title">Certificate Information</div>
-            <div className="xrf-field"><label className="xrf-label">Shop Name</label><input className="xrf-input" value={shopName} onChange={e=>setShopName(e.target.value)} /></div>
+            <div className="xrf-field" ref={custDropRef} style={{position:'relative'}}>
+              <label className="xrf-label">Shop Name</label>
+              <input
+                className="xrf-input"
+                value={shopName}
+                onChange={e => { setShopName(e.target.value); setCustQuery(e.target.value); }}
+                onFocus={() => { setCustQuery(shopName); if (custResults.length > 0) setShowCustDrop(true); }}
+                placeholder="Type to search or enter manually…"
+              />
+              {showCustDrop && (
+                <div style={{ position:'absolute', top:'100%', left:0, right:0, zIndex:50, background:'var(--bg-raised,#1e1e2e)', border:'1px solid var(--border-md,rgba(255,255,255,.15))', borderRadius:'10px', marginTop:'4px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,.4)' }}>
+                  {custResults.map(c => (
+                    <div
+                      key={c.id}
+                      onClick={() => { setShopName(c.name); setCustQuery(''); setShowCustDrop(false); }}
+                      style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'9px 12px', cursor:'pointer', borderBottom:'1px solid var(--border-xs,rgba(255,255,255,.05))' }}
+                      onMouseEnter={e => e.currentTarget.style.background='var(--gold-glow,rgba(212,175,55,.1))'}
+                      onMouseLeave={e => e.currentTarget.style.background=''}
+                    >
+                      <span style={{ fontSize:'.85rem', fontWeight:600, color:'var(--t1,#eee)' }}>{c.name}</span>
+                      <span style={{ fontSize:'.74rem', color:'var(--t3,#888)' }}>{c.mobile}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="xrf-field"><label className="xrf-label">Shop Address</label><input className="xrf-input" value={shopAddress} onChange={e=>setShopAddress(e.target.value)} /></div>
             <div className="xrf-field">
               <label className="xrf-label">Other Information <span style={{color:'var(--t5,#444)',fontWeight:400}}>(optional)</span></label>
@@ -860,7 +909,7 @@ export default function XRFCertificate() {
 
           <div className="xrf-panel">
             <div className="xrf-panel-title">Card Appearance</div>
-            <div className="xrf-label" style={{marginBottom:'8px'}}>Gradient Theme</div>
+            <div className="xrf-label" style={{marginBottom:'8px'}}>Colors</div>
             <div className="xrf-color-presets">
               {GRADIENT_PRESETS.map(p=>(
                 <div
@@ -902,6 +951,10 @@ export default function XRFCertificate() {
                 </label>
               )}
             </div>
+              <label style={{display:'flex',alignItems:'center',gap:'8px',marginTop:'10px',cursor:'pointer',fontSize:'.82rem',color:'var(--t2,#333)'}}>
+                <input type="checkbox" checked={showWatermark} onChange={e=>setShowWatermark(e.target.checked)} style={{width:'15px',height:'15px',cursor:'pointer'}} />
+                Show watermark on back side
+              </label>
           </div>
 
           <div className="xrf-panel">
