@@ -123,12 +123,12 @@ async function drawFront(ctx, d, S) {
   ctx.font = `800 ${40 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
   const shopNameX = (textAreaW) / 2 + 20 * S;
-  ctx.fillText((d.shopName || 'YOUR SHOP NAME').toUpperCase(), shopNameX, 52 * S);
+  ctx.fillText((d.shopName || 'YOUR SHOP NAME').toUpperCase(), shopNameX, 62 * S);
 
   /* ── Shop Address ── */
   ctx.fillStyle = cSub;
   ctx.font = `400 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
-  ctx.fillText((d.shopAddress || 'Shop Address').toUpperCase(), shopNameX, 74 * S);
+  ctx.fillText((d.shopAddress || 'Shop Address').toUpperCase(), shopNameX, 90 * S);
 
   /* ── Title bar ── */
   const titleBarY = headerH;
@@ -163,19 +163,19 @@ async function drawFront(ctx, d, S) {
 
   const leftColW = W * 0.60;
   let rowY = midY + 20 * S;
-  const labelW  = 150 * S;
+  const labelW  = 180 * S;
   const rowX    = 16 * S;
-  const rowStep = 25 * S;
+  const rowStep = 25 * S;labelW
 
   const colonW = 10 * S;
   rows.forEach(([lbl, val]) => {
     ctx.textAlign = 'left';
-    ctx.font      = `600 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `600 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bLabel;
     ctx.fillText(lbl.toUpperCase(), rowX, rowY);
     ctx.fillText(':', rowX + labelW, rowY);
 
-    ctx.font      = `700 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `700 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bText;
     // Clip value text so it doesn't overflow the left column
     ctx.save();
@@ -200,7 +200,7 @@ async function drawFront(ctx, d, S) {
   ctx.stroke();
 
   ctx.fillStyle = '#cc0000';
-  ctx.font      = `800 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
+  ctx.font      = `800 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
   ctx.textAlign = 'center';
   ctx.letterSpacing = `${3.5 * S}px`;
   ctx.fillText('METAL REPORT', leftColW / 2, metalY + 16 * S);
@@ -225,11 +225,11 @@ async function drawFront(ctx, d, S) {
     const mx = rowX + (i % 2) * colW;
     const my = metalY + 40 * S + Math.floor(i / 2) * 28 * S;
     ctx.textAlign = 'left';
-    ctx.font      = `600 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `600 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bLabel;
     ctx.fillText(`${lbl}: `, mx, my);
     const lblMeasure = ctx.measureText(`${lbl}: `).width;
-    ctx.font      = `700 ${15 * S}px 'Lexend','Segoe UI',sans-serif`;
+    ctx.font      = `700 ${18 * S}px 'Lexend','Segoe UI',sans-serif`;
     ctx.fillStyle = bText;
     ctx.fillText(val, mx + lblMeasure, my);
   });
