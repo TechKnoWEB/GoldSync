@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import QRCode from 'qrcode';
 import { Camera, Download, Loader2, MonitorSmartphone } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient.js';
 
 {/* How to modify it easily — key sections:
 The drawing is divided into 5 vertical zones stacked top-to-bottom. Each zone has hardcoded Y positions, so changing one zone requires adjusting all zones below it.
@@ -803,6 +804,40 @@ export default function XRFCertificate({ customers = [] }) {
     reader.readAsDataURL(file);
   };
 
+  /* ─── Autosave certificate data to database (excludes image) ───────────── */
+  const saveCertificateData = useCallback(async () => {
+    // Only autosave when downloading front side
+    // Silently fail if database is unavailable - don't interrupt user
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { error } = await supabase.from('xrf_certificates').insert([{
+        shop_name: shopName || '',
+        shop_address: shopAddress || '',
+        customer_name: customerName || '',
+        certificate_no: certNo || '',
+        certificate_date: date || '',
+        product_name: productName || '',
+        product_weight: productWt || '',
+        product_karat: productKarat || '',
+        gold_percent: gold || '',
+        silver_percent: silver || '',
+        copper_percent: copper || '',
+        others_percent: others || '',
+        user_id: user?.id || null,
+      }]);
+
+      if (error) {
+        console.warn('XRF autosave failed (non-blocking):', error.message);
+      } else {
+        console.log('XRF certificate autosaved:', certNo);
+      }
+    } catch (err) {
+      // Silently fail - database may not be set up yet
+      console.warn('XRF autosave skipped (non-blocking):', err.message);
+    }
+  }, [shopName, shopAddress, customerName, certNo, date, productName, productWt, productKarat, gold, silver, copper, others]);
+
   const handleDownload = async (side) => {
     if (downloading) return;
     setDl(true);
@@ -812,6 +847,12 @@ export default function XRFCertificate({ customers = [] }) {
       await document.fonts.load(`700 18px 'Lexend'`);
       await document.fonts.load(`600 12px 'Lexend'`);
       await document.fonts.load(`400 10px 'Lexend'`);
+
+      // Autosave to database BEFORE downloading front side (non-blocking)
+      if (side === 'front') {
+        await saveCertificateData();
+      }
+
       await downloadCard(side, d, shopName, certNo);
     } catch (err) {
       console.error('Download error:', err);
